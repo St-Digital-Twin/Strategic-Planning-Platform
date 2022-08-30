@@ -1,0 +1,26 @@
+{
+    "id": "9E2DF609",
+    "path": "~/YDisk.work.localized/1. PersData/1. ИП Гумеров/7. СП/4. ЦД  UP/2. Проекты/121.EurochemP/3.Shiny/121.EurochemP/shiny_global.R",
+    "project_path": "3.Shiny/121.EurochemP/shiny_global.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1661513326246.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "0,3",
+        "scrollLine": "0"
+    },
+    "folds": "1|27|4|0|\n5|38|13|0|\n14|53|29|0|\n30|54|34|0|\n35|14|39|0|\n40|11|43|0|\n",
+    "lastKnownWriteTime": 1661795714,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1661757465143,
+    "read_only": false,
+    "read_only_alternatives": []
+}

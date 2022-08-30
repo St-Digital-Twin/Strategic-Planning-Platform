@@ -1,0 +1,468 @@
+
+server <- function(input, output) {
+  output$inst1 <- renderUI({
+    str1 <- paste("Ниже представлена структура потока преобразования данных.")
+    str2 <- paste("Варианты взаимодействия с графом:")
+    str3 <- paste("1. При нажатии ниже появляется таблица с данными выбранного узла.")
+    str4 <-   paste("2. При двойном нажатии отображаются входные и выходные потоки для данного графа.")
+    str4.1 <- paste("2.1. Выйти из режима можно путем нажатия на узел с подписью «Свернутый узел».")
+    str5 <- paste("3. Интерфейс позволяет менять взаиморасположение узлов и сохранять его при помощи кнопки «Save Positions».")
+    str6 <- paste("3. При наведении поялвяется подсказка указывающая к какой группе аппераций над данными принадлежит выбранный узел.")
+    HTML(paste(str1, str2,str3,str4,str4.1,str5, sep = '<br/>'))
+    
+  })
+  output$inst2 <- renderUI({
+    str1 <- paste("1. При нажатии на узел ниже поялвяется настраиваемая таблица с содержанием узла (не все узлы содержат данные, некоторые узлы отвечают за отрисовку, об этом при наведении появится уведомление).")
+    str2 <- paste("2. Нажав на стрелочки у названия колонки можно отсортировать таблицу по этой колонке.")
+    str3 <- paste("3. В окне поиска можно найти интересующее зачение.")
+    str4 <- paste("4. Есть возможность листать страницы данных и выбирать количество записей на одной странице.")
+    str5 <- paste("5. Все окна могут быть свернуты нажатием на «-» в правом верхнем углу бокса.")
+    HTML(paste(str1, str2,str3,str4,str5, sep = '<br/>'))
+    
+  })
+  output$inst3 <- renderUI({
+    str1 <- paste("1. Для отображения данных используются два графика попарных корреляций, а также отображение данных модели в формате линейной диаграммы и гистограммы.")
+    str2 <- paste("2. Графики модели настраиваются вместе и есть возможность изменения временного интервала в разделе «Model graphic».")
+    str3 <- paste("3. У графиков попарной корреляции можно настраивать данные по осям и временной интервал в разделе «Correlation graphic».")
+    str4 <- paste("4. Есть возможность выбора файла для анализа с помощью выпадающего списка «Choose input» в разделе «Common settings».")
+    HTML(paste(str1, str2,str3,str4, sep = '<br/>'))
+    
+  })
+  output$inst4 <- renderUI({
+    str1 <- paste("1. Есть возможность загрузки пользовательского файла в разделе «Common settings» кнопкой «Browser».")
+    str2 <- paste("2. Существующие параметры графиков и данные можно сохранить в виде отчета для этого в разделе «Common settings» в поле вода нужно ввести свою почту и нажать кнопку отправки, на почту придет автоматически сформированный отчет.")
+    str3 <- paste("3. При нажатии кнопки «Update data» все узлы и цепочки расчетов пересчитаются с учетом новых загруженных пользователем файлов.")
+    HTML(paste(str1, str2,str3,sep = '<br/>'))
+  })
+  
+  
+    # output$visnetwork <- renderVisNetwork({
+    # 
+    #     # generate bins based on input$bins from ui.R
+    #     # x    <- faithful[, 2]
+    #     # bins <- seq(min(x), max(x), length.out = input$bins + 1)
+    #     # 
+    #     # # draw the histogram with the specified number of bins
+    #     # hist(x, breaks = bins, col = 'darkgray', border = 'white')
+    #   show_graph()
+    # })
+    vec_of_files2 <- reactiveValues(a = vec_of_files)
+    # list_axis_cor2 <- reactiveValues(axis = list_axis_cor)
+    
+    
+# 1. Логотип    ####
+    output$logo <- renderImage({
+      list(src = '8.Pic/15.png',
+           # contentType = 'image/png',
+           width = 150,
+           vspace = 20,
+           hspace = 20,
+           # # width = 400,
+           # height = 60,
+           alt = "https://www.eurochemgroup.com/")
+      
+    }, deleteFile = FALSE)
+
+# 2. Выбор файла из списка    ####        
+    output$id2 <- 
+      renderUI({
+        req(input$from_where)
+        if(input$from_where == "File"){
+          selectizeInput(inputId = "nd_file",
+                         label = "Choose file",
+                         choices = vec_of_files2$a,
+                         options = list(create = TRUE), selected = vec_of_files2$a[1], multiple = FALSE) 
+        }
+      })
+    
+    
+# 3. Отправка Rmd на email ####
+    observeEvent(input$send_email, {
+      reqipient <- input$email_pol
+      knit2html("1.Data/testrmd.Rmd", options = "")
+      send.mail(from = "<nikbrown35@gmail.com>",
+                to = paste0("<",reqipient,">"),
+                subject = paste0("Report on file : ",input$nd_file),
+                body = "testrmd.html",
+                html = TRUE,
+                inline = TRUE,
+                smtp = list(host.name = "smtp.gmail.com",
+                            port = 465,
+                            user.name = "nikbrown35@gmail.com",
+                            passwd = "jkadakucyyuyjehl",
+                            ssl = TRUE),
+                authenticate = TRUE,
+                encoding = "utf-8")
+      showModal(modalDialog(
+        "Sent",
+        size = 's',
+        easyClose = TRUE
+      ))
+    })
+    # data0 <- reactiveValues(data = "model_data")
+    # observeEvent(input$click, {
+    #   browser()
+    #   
+    # })
+    # data0 <- eventReactive(input$button1, {
+    #   browser()
+    #   id0 <- as.numeric(input$click)
+    #   data <- read.xlsx("1.Data/2.shiny/coords.xlsx") %>% filter(id == id0) %>% select(label) %>% deframe()
+    #   table0 <- tar_read_raw(data)
+    #   return(table0)
+    # })
+    
+    
+    
+    output$table <- renderDataTable({
+      if(is.null(input$click)){
+        id0 <-  4
+      }else{
+        if(str_count(input$click) > 5){
+          id0 <-  4
+        }else{
+          id0 <- as.numeric(input$click)  
+        }
+      }
+      
+      data <- read.xlsx("1.Data/2.shiny/coords.xlsx") %>% filter(id == id0) %>% select(label) %>% deframe()
+      table0 <- tar_read_raw(data)
+      if(is.data.table(table0)){
+        table0 <- list(table0)
+      }
+      if(is.null(table0) | !is.data.table(table0[[1]])){
+        data.table(Message = "It is not a table target")
+      }else{
+        table0[[1]] 
+      }
+      })
+    observeEvent(input$user_file, {
+      file <- input$user_file
+      ext <- tools::file_ext(file$datapath)
+      l <- read.xlsx(file$datapath)
+      write.xlsx(l,paste0("1.Data/view_in_shiny_like_files/",file$name))
+      vec_of_files2$a <-  list.files(path = path)
+    })
+    
+# 4. Обновление данных
+    observeEvent(input$update_data, {
+      # tar_make(download_files)
+      # tar_make(correlation_graph)
+      # tar_make(quotes_forecast)
+      # tar_make(model_data)
+      # tar_make(model_graph)
+      # tar_make(send_report)
+      tar_make(dashboard)
+      showModal(modalDialog(
+        "Updated",
+        size = 's',
+        easyClose = TRUE
+      ))
+    })
+    
+# 5. Первый корреляционный график ####
+    output$cor_pot1 <- renderPlotly({
+      if(input$from_where == "File"){
+        if(!is.null(input$nd_file)){
+          quotesForecast <- quotesForecast(read.xlsx(paste0(path,"/",input$nd_file)) %>% as.data.table())
+          modelCreation <- modelCreation(quotesForecast)$model_data
+          write.xlsx(modelCreation, "1.Data/tempdata.xlsx")
+          write.csv(tibble(file = input$nd_file, 
+                           x_gr = input$X_1, 
+                           y_gr = input$Y_1, 
+                           str_year = input$first_graph_year[1], 
+                           end_year = input$first_graph_year[2],
+                           x_gr2 = input$X_2, 
+                           y_gr2 = input$Y_2, 
+                           str_year2 = input$second_graph_year[1], 
+                           end_year2 = input$second_graph_year[2],
+                           model_year = input$model_year[1], 
+                           model_end_year = input$model_year[2]),"1.Data/Rmddata.csv")
+          p <- graphCor(data = "1.Data/tempdata.xlsx", targets = FALSE, x_gr = input$X_1, y_gr = input$Y_1, str_year = input$first_graph_year[1], end_year = input$first_graph_year[2])
+          p %>%
+            layout(
+              images = list(
+                source = base64enc::dataURI(file = '8.Pic/15.png'),
+                x = 0.82, y = 1.05 ,
+                sizex = 0.18, sizey = 0.1,
+                xref = "paper", yref = "paper",
+                xanchor = "left", yanchor = "bottom"
+              ),
+              margin = list(t = 50)
+            )
+        }
+      } else if(input$from_where == "Downloaded"){
+        write.csv(tibble(file = "quotes_agregation_level1.xlsx", 
+                         x_gr = input$X_1, 
+                         y_gr = input$Y_1, 
+                         str_year = input$first_graph_year[1], 
+                         end_year = input$first_graph_year[2],
+                         x_gr2 = input$X_2, 
+                         y_gr2 = input$Y_2, 
+                         str_year2 = input$second_graph_year[1], 
+                         end_year2 = input$second_graph_year[2],
+                         model_year = input$model_year[1], 
+                         model_end_year = input$model_year[2]),"1.Data/Rmddata.csv")
+        p <- graphCor(x_gr = input$X_1, y_gr = input$Y_1, str_year = input$first_graph_year[1], end_year = input$first_graph_year[2])
+        p %>%
+          layout(
+            images = list(
+              source = base64enc::dataURI(file = '8.Pic/15.png'),
+              x = 0.82, y = 1.05 ,
+              sizex = 0.18, sizey = 0.1,
+              xref = "paper", yref = "paper",
+              xanchor = "left", yanchor = "bottom"
+            ),
+            margin = list(t = 50)
+          )
+      }
+    })
+    
+    
+# 6. Второй корреляционный график ####    
+    output$cor_pot2 <- renderPlotly({
+      if(input$from_where == "File"){
+        if(!is.null(input$nd_file)){
+          quotesForecast <- quotesForecast(read.xlsx(paste0(path,"/",input$nd_file)) %>% as.data.table())
+          modelCreation <- modelCreation(quotesForecast)$model_data
+          write.xlsx(modelCreation, "1.Data/tempdata.xlsx")
+          write.csv(tibble(file = input$nd_file, 
+                           x_gr = input$X_1, 
+                           y_gr = input$Y_1, 
+                           str_year = input$first_graph_year[1], 
+                           end_year = input$first_graph_year[2],
+                           x_gr2 = input$X_2, 
+                           y_gr2 = input$Y_2, 
+                           str_year2 = input$second_graph_year[1], 
+                           end_year2 = input$second_graph_year[2],
+                           model_year = input$model_year[1], 
+                           model_end_year = input$model_year[2]),"1.Data/Rmddata.csv")
+          p <- graphCor(data = "1.Data/tempdata.xlsx", targets = FALSE, x_gr = input$X_2, y_gr = input$Y_2, str_year = input$second_graph_year[1], end_year = input$second_graph_year[2])
+          p %>%
+            layout(
+              images = list(
+                source = base64enc::dataURI(file = '8.Pic/15.png'),
+                x = 0.82, y = 1.05 ,
+                sizex = 0.18, sizey = 0.1,
+                xref = "paper", yref = "paper",
+                xanchor = "left", yanchor = "bottom"
+              ),
+              margin = list(t = 50)
+            )
+        }
+      } else if(input$from_where == "Downloaded"){
+        write.csv(tibble(file = "quotes_agregation_level1.xlsx", 
+                         x_gr = input$X_1, 
+                         y_gr = input$Y_1, 
+                         str_year = input$first_graph_year[1], 
+                         end_year = input$first_graph_year[2],
+                         x_gr2 = input$X_2, 
+                         y_gr2 = input$Y_2, 
+                         str_year2 = input$second_graph_year[1], 
+                         end_year2 = input$second_graph_year[2],
+                         model_year = input$model_year[1], 
+                         model_end_year = input$model_year[2]),"1.Data/Rmddata.csv")
+        p <- graphCor(x_gr = input$X_2, y_gr = input$Y_2, str_year = input$second_graph_year[1], end_year = input$second_graph_year[2])
+        p %>%
+          layout(
+            images = list(
+              source = base64enc::dataURI(file = '8.Pic/15.png'),
+              x = 0.82, y = 1.05 ,
+              sizex = 0.18, sizey = 0.1,
+              xref = "paper", yref = "paper",
+              xanchor = "left", yanchor = "bottom"
+            ),
+            margin = list(t = 50)
+          )
+      }
+    })
+    
+    
+# 7. Линейный график модели ####
+    output$model_graph1 <- renderPlotly({
+      if(input$from_where == "File"){
+        if(!is.null(input$nd_file)){
+          quotesForecast <- quotesForecast(read.xlsx(paste0(path,"/",input$nd_file)) %>% as.data.table())
+          modelCreation <- modelCreation(quotesForecast)$model_data
+          write.xlsx(modelCreation, "1.Data/tempdata.xlsx")
+          write.csv(tibble(file = input$nd_file, 
+                           x_gr = input$X_1, 
+                           y_gr = input$Y_1, 
+                           str_year = input$first_graph_year[1], 
+                           end_year = input$first_graph_year[2],
+                           x_gr2 = input$X_2, 
+                           y_gr2 = input$Y_2, 
+                           str_year2 = input$second_graph_year[1], 
+                           end_year2 = input$second_graph_year[2],
+                           model_year = input$model_year[1], 
+                           model_end_year = input$model_year[2]),"1.Data/Rmddata.csv")
+          p <- modelGraph(data = "1.Data/tempdata.xlsx", targets = FALSE, str_year = input$model_year[1], end_year = input$model_year[2])
+          
+         # p <- modelGraph(data = paste0(path,"/",input$nd_file), targets = FALSE)
+          p$curve %>%
+            layout(
+              images = list(
+                source = base64enc::dataURI(file = '8.Pic/15.png'),
+                x = 0.82, y = 1.05 ,
+                sizex = 0.18, sizey = 0.1,
+                xref = "paper", yref = "paper",
+                xanchor = "left", yanchor = "bottom"
+              ),
+              margin = list(t = 50)
+            )
+          }
+      } else if(input$from_where == "Downloaded"){
+        write.csv(tibble(file = "quotes_agregation_level1.xlsx", 
+                         x_gr = input$X_1, 
+                         y_gr = input$Y_1, 
+                         str_year = input$first_graph_year[1], 
+                         end_year = input$first_graph_year[2],
+                         x_gr2 = input$X_2, 
+                         y_gr2 = input$Y_2, 
+                         str_year2 = input$second_graph_year[1], 
+                         end_year2 = input$second_graph_year[2],
+                         model_year = input$model_year[1], 
+                         model_end_year = input$model_year[2]),"1.Data/Rmddata.csv")
+        p <- modelGraph(str_year = input$model_year[1], end_year = input$model_year[2])
+        
+        # p <- modelGraph(data = paste0(path,"/",input$nd_file), targets = FALSE)
+        p$curve %>%
+          layout(
+            images = list(
+              source = base64enc::dataURI(file = '8.Pic/15.png'),
+              x = 0.82, y = 1.05 ,
+              sizex = 0.18, sizey = 0.1,
+              xref = "paper", yref = "paper",
+              xanchor = "left", yanchor = "bottom"
+            ),
+            margin = list(t = 50)
+          )
+      }
+    })
+    
+# 8. График модели - гистограмма ####
+    output$model_graph2 <- renderPlotly({
+      if(input$from_where == "File"){
+        if(!is.null(input$nd_file)){
+          quotesForecast <- quotesForecast(read.xlsx(paste0(path,"/",input$nd_file)) %>% as.data.table())
+          modelCreation <- modelCreation(quotesForecast)$model_data
+          write.xlsx(modelCreation, "1.Data/tempdata.xlsx")
+          write.csv(tibble(file = input$nd_file, 
+                           x_gr = input$X_1, 
+                           y_gr = input$Y_1, 
+                           str_year = input$first_graph_year[1], 
+                           end_year = input$first_graph_year[2],
+                           x_gr2 = input$X_2, 
+                           y_gr2 = input$Y_2, 
+                           str_year2 = input$second_graph_year[1], 
+                           end_year2 = input$second_graph_year[2],
+                           model_year = input$model_year[1], 
+                           model_end_year = input$model_year[2]),"1.Data/Rmddata.csv")
+          p <- modelGraph(data = "1.Data/tempdata.xlsx", targets = FALSE, str_year = input$model_year[1], end_year = input$model_year[2])
+          p$graph_cols %>%
+            layout(
+              images = list(
+                source = base64enc::dataURI(file = '8.Pic/15.png'),
+                x = 0.82, y = 1.05 ,
+                sizex = 0.18, sizey = 0.1,
+                xref = "paper", yref = "paper",
+                xanchor = "left", yanchor = "bottom"
+              ),
+              margin = list(t = 50)
+            )
+          }
+      } else if(input$from_where == "Downloaded"){
+        write.csv(tibble(file = "quotes_agregation_level1.xlsx", 
+                         x_gr = input$X_1, 
+                         y_gr = input$Y_1, 
+                         str_year = input$first_graph_year[1], 
+                         end_year = input$first_graph_year[2],
+                         x_gr2 = input$X_2, 
+                         y_gr2 = input$Y_2, 
+                         str_year2 = input$second_graph_year[1], 
+                         end_year2 = input$second_graph_year[2],
+                         model_year = input$model_year[1], 
+                         model_end_year = input$model_year[2]),"1.Data/Rmddata.csv")
+        p <- modelGraph(str_year = input$model_year[1], end_year = input$model_year[2])
+        
+        # p <- modelGraph(data = paste0(path,"/",input$nd_file), targets = FALSE)
+        p$graph_cols %>%
+          layout(
+            images = list(
+              source = base64enc::dataURI(file = '8.Pic/15.png'),
+              x = 0.82, y = 1.05 ,
+              sizex = 0.18, sizey = 0.1,
+              xref = "paper", yref = "paper",
+              xanchor = "left", yanchor = "bottom"
+            ),
+            margin = list(t = 50)
+          )
+      }
+    })
+
+    
+    
+# 9. Вывод графа с пайплайном ####
+      pipeline        <- reactiveValues(n = get_graph()$n, e = get_graph()$e)
+      output$visnetwork <- renderVisNetwork ({show_graph(pipeline$n, pipeline$e)}) # Граф с Pipeline
+      
+      observe({
+        visNetworkProxy("visnetwork") %>%
+          visLayout (randomSeed = 123, improvedLayout = T) %>%
+          visEdges  (smooth = input$type_edge) %>%
+          visHierarchicalLayout (enabled          = input$enabledHier,
+                                 levelSeparation  = input$levelSeparation,
+                                 nodeSpacing      = input$nodeSpacing,
+                                 sortMethod       = input$sortMethod,
+                                 blockShifting    = input$blockShifting,
+                                 edgeMinimization = input$edgeMinimization,
+                                 direction        = input$direction) %>%
+          visPhysics(enabled = input$physics, solver = input$solver)
+      }) # Получение конфигурационных атрибутов для графа. Временно - далее атрибуты надо зафиксировать
+
+# 10. Работа по сбору координат узлов  ####
+      vals <- reactiveValues(coords=NULL)
+      observe({
+        invalidateLater(1000)
+        visNetworkProxy("visnetwork") %>% visGetPositions()
+        vals$coords <- if (!is.null(input$visnetwork_positions)) 
+          do.call(rbind, input$visnetwork_positions)
+      }) # Сбор координат с узлов
+      
+      observeEvent(input$SavePos,{ 
+        
+        t <- vals$coords %>% as_tibble() %>% 
+          rownames_to_column(var = "id") %>% 
+          unnest() %>% 
+          as.data.table() %>% 
+          merge(pipeline$n %>% 
+                  .[, c("id", "label", "group", "title", "group2")],
+                by = "id", all.x = TRUE)
+        #     node      x     y
+        #    <chr>    <int> <int>
+        # 1    1      4861  4862
+        openxlsx::write.xlsx (t,        "1.Data/2.shiny/coords.xlsx")
+        openxlsx::write.xlsx (t, paste0("1.Data/2.shiny/coords.", Sys.Date(),".xlsx")) # Резервная копия
+        showModal(modalDialog(
+          "Saved",
+          size = 's',
+          easyClose = TRUE
+        ))
+        # t <- get_graph()$n  t <- t %>% select(id, label, x, y, group, title)
+        # ds1 <- data.table (id = "1" , x = 100, y = 200)
+        # ds1 %>% .[,!c("x","y")] %>% merge(t, by = "id", all.x = TRUE)
+        # pipeline$n <- pipeline$n %>% .[, !c("x","y")] %>% merge(t, by = "id", all = TRUE)
+      }) #Сохранение координат в файл
+      # observeEvent(input$LoadPos,{ 
+      #   
+      #   pipeline$n <- get_graph()$n
+      #   pipeline$e <- get_graph()$e
+      #   showModal(modalDialog(
+      #     "Loaded",
+      #     size = 's',
+      #     easyClose = TRUE
+      #   ))
+      # }) #Загрузка координат из файла
+    
+    
+}

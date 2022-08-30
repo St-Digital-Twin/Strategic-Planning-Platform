@@ -1,0 +1,238 @@
+# Пользовательский интерфейс  МОБ СКИ  ####
+
+# Выбор уровня детализации потока рес  ####
+detalisation_level <- list(
+  selectInput (inputId  = 'mob_level_choice',
+               label    = "Уровень детализации модели потока энергетических ресурсов",
+               choices  = list(3,4,5),
+               selected = 5,
+               multiple = FALSE)
+) #detalisation_level <- list(
+
+# Настройки управления потребителями   ####
+consumtion_numb <- list(
+  valueBoxOutput("citizenValue0", width = 6),
+  valueBoxOutput("citizenValue" , width = 6),
+  sliderInput(  inputId = "citizen_growth",
+                label   = "Объемы потребления населением, т.у.т",
+                #value   = as.numeric(nodes1 %>% filter (label == "Расходы населения") %>% select(koef_sc)),
+                value   = as.numeric(init_citizen %>% filter (year == time0) %>% select(koef_sc)),
+                min     = -100,
+                max     = 100,
+                step    = 1,
+                post    =" %"
+  ),
+  actionButton( inputId = "mob_recalc_citizen",
+                icon    = icon("calculator"), label = "Пересчитать", width = "90%")
+  
+)
+# Настройки управления уд.потреблением ####
+consumtion_rate <- list(
+  tags$p("Объемы конечного потребления в т.у.т.", style = "font-family: Panton; font-weight: bold; font-size: 10;"),
+  valueBoxOutput("resourceValue0", width = 6),
+  valueBoxOutput("resourceValue" , width = 6),
+  # Выбор Выпуск-Потребление для корректировки удельного потребления
+  
+  # uiOutput('resource_to_end_consumption_ui'),
+  uiOutput('control_from_ui'), # Выбор отрасли выпуска продукии
+  uiOutput('control_to_ui'),# Выбор отрасли затрат продукии
+  sliderInput(  inputId = "multy_res",
+                label   = "Изменить удельное потребление",
+                value   = 0,
+                min     = -100,
+                max     =  100,
+                step    = 1,
+                post    =" %"),
+  
+  actionButton( inputId = "mob_recalc_consumption",
+                icon    = icon("calculator"), label = "Пересчитать", width = "90%"),
+  actionButton( inputId = "mob_recalc_refresh",
+                icon    = icon("refresh"), label = "Обнулить сценарии", width = "90%") #все коэфиценты делаем нулевыми
+)
+
+# Настройки анимации                   ####
+visual_input <- list(
+  checkboxInput(inputId  = 'physics' , label    = "Анимация",
+                value    = F),
+  
+  selectInput (inputId  = 'solver'   , label    = "Тип реакции",
+               choices  = list('barnesHut', 'repulsion', 'hierarchicalRepulsion', 'forceAtlas2Based'),
+               selected = 'forceAtlas2Based')
+) #visual_input
+
+
+# Настройки иерарх топологии графа     ####
+visual_input_layout <- list(
+  selectInput (inputId  = 'type_edge', label    = "Тип кривой",
+               choices  = list('dynamic', 'continuous', 'discrete', 'diagonalCross', 'straightCross', 'horizontal', 'vertical', 'curvedCW', 'curvedCCW', 'cubicBezier'),
+               selected = 'cubicBezier'),
+  
+  checkboxInput(inputId = "enabledHier"     , label = "Упорядоченный граф", value = T),
+  checkboxInput(inputId = "edgeMinimization", label = "Минимизация ребер" , value = FALSE),
+  checkboxInput(inputId = "blockShifting"   , label = "Сдвиг узлов"       , value = FALSE),
+  
+  sliderInput(inputId = "levelSeparation",
+              label   = "Пространство между уровнями",
+              value   = 600, min = 0, max = 500, step = 5), 
+  
+  sliderInput(inputId = "nodeSpacing", label   = "Пространство между узлами",
+              value   = 45 , min = 0, max = 400 , step = 5), 
+  
+  selectInput(inputId  = 'sortMethod', label    = "Тип сортировки узлов",
+              choices  = list('hubsize', 'directed'), selected = 'directed'),
+
+  selectInput(inputId  = 'shakeTowards', label    = "Расстановка узлов",
+              choices  = list('roots', 'leaves'), selected = 'roots'),
+
+  selectInput(inputId  = 'direction', label    = "Направление потоков",
+              choices  = list('UD', 'DU', "LR", "RL"), selected = 'LR')
+) # visual_input_layout
+  
+# Сохранение графов                    ####
+
+
+# Левая панель страницы         ####
+sidebar <- dashboardSidebar(
+  tags$style(HTML('*{font-family: Panton}')),
+  width = "300px",
+  sidebarMenu( id = "sideTabs", 
+    menuItem("Уровень детализации баланса"  , detalisation_level),
+    menuItem("Количество потребителей"      , consumtion_numb),
+    menuItem("Удельное потребление ресурсов", consumtion_rate),
+    menuItem("Настройка топологии"          , visual_input_layout),
+    menuItem("Настройка анимации"           , visual_input),
+    
+    tags$a(href = "https://www.dtwin.ru" , target = "_blank",
+           tags$img(src = "https://www.dropbox.com/s/f0e2y7jnqmhsvb2/%D0%A6%D0%94.0043.46.%2023.03.2019.png?dl=1", 
+                    width = "100", align = "middle", alt = "www", hspace ="80", vspace="7"))
+  )# sidebarMenu
+)# dashboardSidebar
+
+# Центральная панель страницы   ####
+body <- dashboardBody(  
+  tags$head(tags$style(HTML('.main-header .logo {font-family: Panton; font-weight: bold; font-size: 8; line-height: 1; padding: 5px}'))),
+  tags$style(HTML('*{font-family: Panton}')),
+  tabsetPanel(id = "tabSwitch",
+    # Вкладка "Модель. Таблицы"     ####
+    tabPanel (title = set_graph_types$tab[1],
+              fluidRow(
+                # actionButton("getMobEdg", "Посмотреть моб"), 
+                box( width = 12, collapsible = T, collapsed = T, status = "primary", title = "Основные показатели",
+                     tags$p("Фактические значения", style = "font-family: Panton; font-weight: bold; font-size: 10;"),
+                     valueBoxOutput("emissionValue" , width = 3),
+                     valueBoxOutput("importValue_vb"     , width = 3),
+                     valueBoxOutput("losesValue_vb"      , width = 3),
+                     valueBoxOutput("consumptionValue_vb", width = 3),
+                     tags$p("Сценарные значения", style = "font-family: Panton; font-weight: bold; font-size: 10;"),
+                     valueBoxOutput("emissionValue0" , width = 3),
+                     valueBoxOutput("importValue0_vb"     , width = 3),
+                     valueBoxOutput("losesValue0_vb"      , width = 3),
+                     valueBoxOutput("consumptionValue0_vb", width = 3)),
+                
+                box( width = 12, collapsible = T, collapsed = F, status = "primary", title = "Визуализация потока топливно-энергетических ресурсов города",
+                     visNetworkOutput("mob_graph_render", height = "500px")
+                ),
+                # , width = 12, collapsible = TRUE, collapsed = F, status = "primary"),
+              ),
+              fluidRow(
+                column(1, uiOutput("Network1_safe_button"  )) , # Клавиша сохранить (на сервер)
+                column(2, uiOutput("Network1_safe_name"    )) , # Ввод имени сохранения
+                column(1, uiOutput("Network1_upload_button")) , # Клавиша загрузить (с  сервера)
+                column(2, uiOutput("Network1_upload_name"  )) , # Ввод имени загрузки
+                box(title = "Матрица затраты-выпуск", div(style = 'overflow-x: scroll', tableOutput("table_matrix")) , width = 12, collapsible = TRUE, collapsed = T, status = "warning"),
+                box(title = "Потоки" ,      div(style = 'overflow-x: scroll', tableOutput("table_edge"  )) , width = 12, collapsible = TRUE, collapsed = T, status = "success"),
+                box(title = "Узлы"   ,      div(style = 'overflow-x: scroll', tableOutput("table_node"  )) , width = 12, collapsible = TRUE, collapsed = T, status = "success")
+              ),
+              fluidRow(
+                # box(title = "Редактирование уровней узлов", width = 12,collapsible = TRUE, collapsed = F, status = "info",
+                #     actionButton("getMobNodes", "Получить уровни"), 
+                #     div(style = 'overflow-x: scroll', 
+                #         # tableOutput("table_nodes_lll" ))
+                #         rHandsontableOutput("nodes_level_edit_table"))
+                # )
+              )
+    ), # tabPanel ("Модель", 
+    # Вкладка "Методика"            ####
+    tabPanel (title = set_graph_types$tab[2],
+                box(
+                  title = "Порядок расчета баланса энергетических ресурсов города"  , solidHeader = TRUE, collapsible = TRUE, 
+                  visNetworkOutput("method_graph_render"), # height = 2500,
+                  status = "primary", width = 12),
+                column(2, uiOutput("Network2_render_button")) , # Клавиша обновить рендеринг графа
+                column(1, uiOutput("Network2_safe_button"  )) , # Клавиша сохранить (на сервер)
+                column(2, uiOutput("Network2_safe_name"    )) , # Ввод имени сохранения
+                column(1, uiOutput("Network2_upload_button")) , # Клавиша загрузить (с  сервера)
+                column(2, uiOutput("Network2_upload_name"  )) , # Ввод имени загрузки 
+                box(title = "Ключевые узлы методики", solidHeader = TRUE, collapsible = TRUE, collapsed = T,
+                    rHandsontableOutput("method_nodes_table", height ="50%"),
+                    status = "info",
+                    width = 12),
+                # ), #box 
+                box(title = "Шаги методики", solidHeader = TRUE, collapsible = TRUE, collapsed = T,
+                    rHandsontableOutput("method_edges_table", height ="50%"),
+                    status = "info",
+                    width = 12),
+                # ), #box 
+                box(
+                  title = "Ссылки"         , solidHeader = TRUE, collapsible = TRUE, collapsed = T,
+                  width = 12,
+                  status = "warning",
+                  tags$ol(
+                    type="1",
+                    tags$li( a(href = "https://dtcity.shinyapps.io/Ecology", target = "_blank", "Сайт - Экологические расходы России")),
+                    tags$li( a(href = "https://www.dtwin.ru" , target = "_blank", "Web-сайт Цифрового Двойника")),  # tags$li(
+                    tags$li( a(href = "https://www.dropbox.com/s/07g10l04ivench9/%D0%9C%D0%9E%D0%91%20%D0%9C%D0%B5%D1%82%D0%BE%D0%B4%D0%B8%D0%BA%D0%B0.pdf?dl=1", target = "_blank", "Временная методика формирования и применения внутриотраслевого баланса системы коммунальной инфраструктуры и энергетики Санкт-Петербург.
+                                     Опубликовано в Вестнике комитета по тарифам. г.Санкт-Петербург. Июнь 2018 года ")),  # tags$li(
+                    tags$li(a(href = "https://www.dropbox.com/s/tfd58vy814nsw4l/2288.0401.%20%D0%9C%D0%B5%D1%82%D0%BE%D0%B4%D0%B8%D0%BA%D0%B0%20%D0%A2%D0%AD%D0%91%20%D0%A1%D0%9F%D0%B1.docx?dl=1",
+                              target = "_blank", "Методика формирования и применения транспортно-экономического баланса")),
+                    tags$li(a(href = "https://www.dropbox.com/s/j95zq9h32bkur57/%D0%9E%D0%A2%D0%A7%D0%95%D0%A2-%D0%9D%D0%98%D0%98-%D0%90%D1%82%D0%BC%D0%BE%D1%81%D1%84%D0%B5%D1%80%D0%B0-%D0%A1%D0%9F%D0%91-%D0%9F%D0%93_%D0%93%D0%BE%D1%81%D0%BA%D0%BE%D0%BD%D1%82%D1%80%D0%B0%D0%BA%D1%82-425-16_18.10.2016.docx?dl=1",
+                              target = "_blank", "Оценка объемов выбросов парниковых газов в Санкт-Петербурге за период 2011 - 2015 годов"))
+                  ) #tags$ol(
+                ) #2 box(
+    ), #  tabPanel ("Методика",
+    # Вкладка "Заметки DT.Notes"    ####
+    tabPanel (title = set_graph_types$tab[3],
+              visNetworkOutput("mind_graph_render"),
+              box(title = "Перечень заметок", solidHeader = TRUE, collapsible = TRUE, collapsed = T,
+                  rHandsontableOutput("mind_nodes_table"),
+                  status = "info",
+                  width = 12
+                  ), #box(title = "Перечень заметок"
+              box(title = "Перечень связей", solidHeader = TRUE, collapsible = TRUE, collapsed = T,
+                  tableOutput("mind_edge_table"),
+                  status = "info",
+                  width = 12
+              ), #box(title = "Перечень связей",
+              column(1, uiOutput("Network3_safe_button"  )) # Клавиша сохранить (на сервер)
+              # ,
+              # textOutput("Network3_safe_message")
+              )  # tabPanel ("Заметки",
+  ) # tabsetPanel
+  # tags$footer(href = "http://www.dtwin.ru", "@Digital Twin")
+) #dashboardBody
+
+
+
+
+# Сборка стенда                 ####
+ui_1 <- dashboardPage(
+  dashboardHeader(title = "ЦИФРОВОЙ ДВОЙНИК ГОРОДА",
+                  titleWidth = "300px",
+                  dropdownMenu(
+                    type             = "messages",
+                    headerText       = "Связаться",
+                    tags$li(a(href   = "https://dtcity.shinyapps.io/Ecology", target = "_blank", "Сайт - Экологические расходы России")),
+                    tags$li(a(href   = "https://docs.google.com/spreadsheets/d/1gxiNyaeIhMJ4g0zqz53PEtEIia6YfeEm6F3yZw793G0/edit#gid=0/",
+                              target = "_blank", "План и замечания")), # tags$li(,
+                    tags$li(a(href   = "https://www.dtwin.ru/"     , target = "_blank", "Web-cайт ЦД"     )), # tags$li(
+                    tags$li(a(href   = "https://t.me/sergeygumerov", target = "_blank", "Телеграм"        )), # tags$li(
+                    tags$li(a(href   = "mailto:info.dtwin.ru"      , target = "_blank", "info.dtwin.ru"   ))  # tags$li(
+                  )
+  ), 
+  sidebar,
+  body) #dashboardPage
+
+
+
+
+

@@ -1,0 +1,1072 @@
+# ЦД.0633 Стенд с цифровым двойником региона
+# Автор С.З.Гумеров
+# Онлайн приложение для визуализации и симуляции ресурсных потоков в городе
+
+# Шпаргалка по библиотеке shinydashboards - https://rstudio.github.io/shinydashboard/structure.html
+# Причинно-следственные связи на графе и расстановка координат
+
+# Многооконный режим https://cran.r-project.org/web/packages/mwshiny/vignettes/mws-vignette.html
+
+# Серверная часть cтенда
+server <- function(input, output, session) {
+  
+# 1. Инициализация реактивных переменных ####
+  # Данные графа 5го уровня
+  graph_data       <- 1:length(set_graph_types$type) %>% 
+    map(~ reactiveValues(nodes = pluck (pluck (init_graph, set_graph_types$type[.]), set_index[1]),
+                         edges = pluck (pluck (init_graph, set_graph_types$type[.]), set_index[2]),
+                         confi = pluck (pluck (init_graph, set_graph_types$type[.]), set_index[3]))) %>% 
+    set_names(set_graph_types$type)
+  
+  # Данные для хранения базового графа 5-го уровня
+  graph_data_5level  <- 1:length(set_graph_types$type) %>% 
+    map(~ reactiveValues(nodes = pluck (pluck (init_graph, set_graph_types$type[.]), set_index[1]),
+                         edges = pluck (pluck (init_graph, set_graph_types$type[.]), set_index[2]),
+                         confi = pluck (pluck (init_graph, set_graph_types$type[.]), set_index[3]))) %>% 
+    set_names(set_graph_types$type)
+  
+  # Данные с численностью населения города 
+  Citizen_data <- reactiveValues(citizen = init_citizen) 
+  
+  # Данные о текущем годе
+  actual_time  <- reactiveValues(year = time0) 
+  
+  # Данные с управлением удельниками
+  graph_control <- reactiveValues (frame = consumption_group)
+  
+  # Актуальные версии исходных данных для использования в считывании
+  graph_filename <- 1:length(set_graph_types$type) %>% 
+    map(~ reactiveValues(file = "actual")) %>% 
+    set_names(set_graph_types$type)
+  
+  # Обновление выбора узлов от и до на левой стороне
+  control_edge <- reactiveValues(control_from_restore = "", control_to_restore = "")
+
+  
+# 2. Вывод графов                        ####
+  # Функция конфигурирования визуализации графа
+  visDigitalTwin <- function (network) {
+    net_expr <- visNetwork(network$nodes, network$edges) %>% 
+      visNodes(shadow = TRUE, font = list(face  = "Panton",  color = "black")) %>% 
+      visEdges(arrows = "middle", smooth = list(enabled = T, type = input$type_edge)) %>%
+      visLayout(randomSeed= input$randomSeed, improvedLayout = T) %>% 
+      visOptions(highlightNearest = list(enabled   = T, 
+                                         hover     = T, # подсвечивание узлов графа при проведении мышкой
+                                         algorithm = "hierarchical", # подсвечивание последователей по направлению графа или опция "all"
+                                         degree    = 1, # глубина подсвечивание
+                                         hideColor = "rgba(200,200,200,0.5"), # цвет не выбранных узлов
+                 nodesIdSelection = T,
+                 selectedBy       = list(variable = "group", hideColor = "rgba(200,200,200,0.5"),
+                 autoResize       = F,
+                 collapse   = list(enabled        = TRUE,
+                                   fit            = TRUE,
+                                   resetHighlight = TRUE,
+                                   keepCoord      = TRUE,
+                                   labelSuffix    = "Свернутый узел"),
+                 clickToUse   = TRUE) %>% # Опция редактирования графа
+      visHierarchicalLayout (enabled          = input$enabledHier,
+                             levelSeparation  = input$levelSeparation,
+                             nodeSpacing      = input$nodeSpacing,
+                             shakeTowards     = input$shakeTowards,
+                             sortMethod       = input$sortMethod,
+                             blockShifting    = input$blockShifting,
+                             edgeMinimization = input$edgeMinimization,
+                             direction        = input$direction) %>%
+    #  visEvents(type = "on", doubleClick = "networkOpenCluster") %>% # При двойном нажатии на узел открывается кластер
+      visInteraction(hover                = TRUE,
+                     hoverConnectedEdges  = TRUE,
+                     multiselect          = TRUE,
+                     navigationButtons    = TRUE,
+                     tooltipDelay         = 50,
+                     selectable           = TRUE,
+                     selectConnectedEdges = TRUE) %>%
+      visLegend(main = list (text     = "Обозначения", style = "font-family: Panton; font-size: 10;"), 
+                position = "right"      , width = 0.05, zoom = F) %>% 
+      visPhysics(enabled = input$physics, solver = input$solver
+                 # ,
+                 # barnesHut = list(gravitationalConstant = -1000,
+                 #                  springLength          = 200,
+                 #                  # gravitationalConstant = -10000,
+                 #                  springConstant        = 0.02,
+                 #                  avoidOverlap          = 0.9
+                 # ),
+                 # forceAtlas2Based = list(theta                 = 0.6,
+                 #                         # gravitationalConstant = -10000,
+                 #                         # centralGravity        = 0.001,
+                 #                         # springLength          = 200,
+                 #                         # springConstant        = 0.07,
+                 #                         avoidOverlap          = 0.9) 
+                 )
+  } # visDigitalTwin <- function (network) {
+  
+  # Визуализации графа
+  output$mob_graph_render    <- renderVisNetwork ({
+    visDigitalTwin (graph_data$mob) %>%
+      visGroups(groupname = 'Импорт'      ,shape  ='triangle') %>%
+      visGroups(groupname = 'Потребление' ,shape  ='square'  ) %>%
+      visGroups(groupname = 'Производство',shape  ='diamond' ) }) # МОБ
+  output$method_graph_render <- renderVisNetwork ({
+    visDigitalTwin (graph_data$method) %>%
+      visGroups(groupname = 'Источники данных', shape = 'square'  ) %>%
+      visGroups(groupname = 'Показатель'      , shape = 'diamond' ) %>%
+      visGroups(groupname = 'Параметр'        , shape = 'triangle') %>%
+      visOptions(manipulation = list(enabled = T , # Опция редактирования графа
+                                     editEdgeCols = list("text"     = c ("title"),
+                                                         "number"   = c ("value"),
+                                                         "color"    = c ("color") ),
+                                     editNodeCols = list("text"     = c ("label"),
+                                                         "number"   = c ("level"),
+                                                         "color"    = c ("color") ),
+                                     addNodeCols  = list("text"   = "label",
+                                                         "number" = "level",
+                                                         "color"  = "color"     ))) # Опция редактирования графа
+  }) # Методика
+  output$mind_graph_render   <- renderVisNetwork ({
+    visDigitalTwin (graph_data$mind) %>%
+      visGroups(groupname = 'Заметка'         , shape = 'box'  ) %>%
+      visGroups(groupname = 'Требование'      , shape = 'circle' ) %>%
+      visGroups(groupname = 'Замечание'       , shape = 'ellipse') %>%
+      visOptions(manipulation = list(enabled = T , # Опция редактирования графа
+                                     editEdgeCols = list("text"     = c ("text"),
+                                                         "number"   = c ("from", "to")),
+                                     editNodeCols = list("text"     = c ("label", "group", "text"),
+                                                         "color"    = c ("color") ),
+                                     addNodeCols  = list(#"number"   = c ("id"),
+                                       "text"     = c ("label", "group", "text"),
+                                       "color"    = "color")) # Опция редактирования графа
+      )
+  }) # Заметки Mind
+  
+  
+# 3. Таблицы с потоками ресурсов         ####
+  #----
+  # __________Вывод таблиц баланса______________________________________________
+
+  # Матрица баланса                                                          ####
+  output$table_matrix <- renderTable(background = "black", hover    = TRUE, striped  = TRUE, bordered = TRUE, spacing = "xs", 
+     graph_data$mob$edges %>%
+       select (from, to, value) %>% 
+       #добавляем подписи
+       left_join(graph_data$mob$nodes %>% select(id, `Выпуск↓, Затраты→` = label) %>% mutate(id = as.numeric(id)), by = c("from" = "id")) %>%
+       left_join(graph_data$mob$nodes %>% select(id,   Input  = label) %>% mutate(id = as.numeric(id)), by = c("to"   = "id")) %>%
+       select(-from, -to) %>% 
+       pivot_wider(names_from = Input) %>%  #делаем матрицу 
+       mutate_all(funs(replace(., is.na(.), 0))) %>% 
+       mutate_if(is.numeric, ~ as.integer(.))
+  )
+  # Узлы баланса                                                             ####
+  output$table_node   <- renderTable( background = "yellow", hover    = TRUE, striped  = TRUE, bordered = TRUE,
+    graph_data$mob$nodes %>%
+      mutate(value = as.integer(value), value0 = as.integer(value0)) %>%
+      select(`Производство` = label, `Объем сценарный` = value, `Объем начальный` = value0, `Изменение удельного потребления` = koef_sc, `Уровень` = level)
+  )
+  # Вывод отдельной матрицы для редактирования уровней иерархии графа
+  # observeEvent(input$getMobNodes,{visNetworkProxy("mob_graph_render") %>% visGetNodes()})
+  # output$table_nodes_lll   <- renderTable(matrix(unlist(input$mob_graph_render_nodes), ncol = length(input$mob_graph_render_nodes), byrow = F))
+  # output$nodes_level_edit_table <- renderRHandsontable ({
+  #   if(!is.null(input$mob_graph_render_nodes)){
+  #     info <- data.frame(matrix(unlist(input$mob_graph_render_nodes), ncol = length(input$mob_graph_render_nodes)), stringsAsFactors=FALSE) %>% 
+  #       select(X2, X3, X8, X9) %>% # Выбрал столбцы label, group, x, y 
+  #       setNames(c("Имя узла", "Группа", "Расположение по горизонтали", "Расположение по вертикали"))
+  #     
+  #     rhandsontable(info , stretchH = "all") # %>% hot_heatmap(cols = 5, color_scale = c("#FAC003", "#67B5CC"))
+  #   }
+  # })
+  # observeEvent(input$nodes_level_edit_table, {
+  #   temp <- hot_to_r(input$nodes_level_edit_table) %>% 
+  #     rename ("x" = "Расположение по горизонтали", "y" = "Расположение по вертикали", "label" = "Имя узла")
+  # 
+  #   if ("x" %in% colnames(graph_data$mob$nodes)){graph_data$mob$nodes <- graph_data$mob$nodes %>% select(-x)}
+  #   if ("y" %in% colnames(graph_data$mob$nodes)){graph_data$mob$nodes <- graph_data$mob$nodes %>% select(-y)}
+  #   
+  #   graph_data$mob$nodes <- temp %>% left_join (graph_data$mob$nodes, by = c("label" = "label")) 
+  #   })
+  
+  # Потоки баланса                                                           ####
+  output$table_edge   <- renderTable( background = "teal", hover    = TRUE, striped  = TRUE, bordered = TRUE, spacing = "s",
+    graph_data$mob$edges %>%
+      mutate(value = as.integer(value), value0 = as.integer(value0)) %>%
+      select(`От узла` = from_label, `К узлу`  = to_label, `Объем сценарный` = value, `Объем начальный` = value0, `Процент изменения` = koef_sc)
+  )
+  
+  
+  # __________Прямое редактирование таблиц баланса______________________________
+  # Редактируемая матрица                                                    #### 
+   # output$mob_graph_render_table_matrix<- renderRHandsontable({
+   #  
+   #  mob_matrix <- graph_data$mob$edges %>% 
+   #    select (from, to, value) %>% 
+   #    #добавляем подписи
+   #    left_join(graph_data$mob$nodes %>% select(id, Output = label), by = c("from" = "id")) %>% 
+   #    left_join(graph_data$mob$nodes %>% select(id, Input  = label), by = c("to"   = "id")) %>% 
+   #    select(-from, -to) %>% 
+   #    #делаем матрицу
+   #    pivot_wider(names_from = Input)
+   #  
+   #  rhandsontable(mob_matrix, stretchH = "all", useTypes = F)  })
+  # output$Network1_render_button <- renderUI({actionButton("Network1_render_button_1", label = "", icon = icon("refresh"))}) #Кнопка обновления графа после изменения таблицы с матрицами
+  # observeEvent(input$Network1_render_button_1, {
+  #   
+  #   temp_a <- hot_to_r(input$mob_graph_render_table_matrix) 
+  #   
+  #   first_col <- c("Output")
+  #   set_col <- names(temp_a)
+  #   set_col <- set_col[!(set_col %in% first_col)]  
+  #   
+  #   temp <- temp_a %>%     
+  #     mutate_all(funs(replace(., is.na(.), 0))) %>%
+  #     pivot_longer(cols = contains(set_col), names_to = "Input") %>% 
+  #     filter(value > 0) %>% 
+  #     left_join(graph_data$mob$nodes %>% select(from = id, Output = label), by = c("Output" = "Output")) %>% 
+  #     left_join(graph_data$mob$nodes %>% select(to   = id, Input  = label), by = c("Input"  = "Input")) %>% 
+  #     select(-Output, -Input)
+  #   
+  #   temp2 <- graph_data$mob$edges
+  #   
+  #   # Надо убрать под кнопку "Обновить визуализацию потоков"
+  #   temp3 <- temp %>% 
+  #     # left_join (col_res,                     by = c("resource_name"   = "Resource")) %>%
+  #     left_join(graph_data$mob$edges %>%
+  #                 select(-value),
+  #               by = c("from" = "from", "to" = "to")) %>% #, "resource_name" = "resource_name")) %>%
+  #     mutate(koef_sc = ifelse(is.na(koef_sc),0, koef_sc),
+  #            value0  = ifelse(is.na(value0) ,0, value0 ),
+  #            title   = paste0(value, ", т. усл.топлива")) %>% 
+  #     left_join(graph_data$mob$nodes %>% select(from = id, from_label = label), by = c("from" = "from")) %>% 
+  #     left_join(graph_data$mob$nodes %>% select(to   = id,   to_label = label), by = c("to"   = "to"  )) %>% 
+  #     select(from_label=from_label.y, to_label=to_label.y, value, from, to, koef_sc, value0, title)
+  #   
+  #   graph_data$mob$edges <- temp3
+  #   # visNetworkProxy("mob_graph_render") %>% visUpdateEdges(edges = graph_data$mob$edges)
+  # })
+  
+  # Редактируемые узлы и потоки                                              #### 
+  # output$mob_graph_render_table_nodes <- renderRHandsontable({ if (!is.null(graph_data$mob$nodes)) rhandsontable(graph_data$mob$nodes, stretchH = "all") %>% hot_heatmap(cols = 5, color_scale = c("#FAC003", "#67B5CC"))})
+  # output$mob_graph_render_table_edges <- renderRHandsontable({ if (!is.null(graph_data$mob$edges)) rhandsontable(graph_data$mob$edges, stretchH = "all") %>% hot_heatmap(cols = 4, color_scale = c("#FAC003", "#67B5CC"))})
+  # Редактирование таблицы c потоками ресурсов                               
+  # observeEvent(input$mob_graph_render_table_nodes, {graph_data$mob$nodes = hot_to_r(input$mob_graph_render_table_nodes)})
+  # observeEvent(input$mob_graph_render_table_edges, {graph_data$mob$edges = hot_to_r(input$mob_graph_render_table_edges)})
+  
+  
+  # __________Работа с изменению баланса________________________________________
+  # Контроль событий по переключению уровней агрегации графа потока ресурсов ####
+  observeEvent(input$mob_level_choice, {
+    
+    temp <- mob_graph_switch_level(data = graph_data_5level$mob, level_new = input$mob_level_choice)
+    
+    graph_data$mob$nodes <- temp$nodes
+    graph_data$mob$edges <- temp$edges
+  })
+  
+  # Контроль событий по изменению кол-ва жителей                             ####
+  observeEvent(input$mob_recalc_citizen, { 
+    # Пересчитываем баланс 5-го уровня
+    temp <- dem_func (graph_data_5level$mob, input$citizen_growth)
+    # Переконвертируем 5й уровень баланса в текущий и отобразим
+    temp_current <- mob_graph_switch_level(temp, input$mob_level_choice)
+    graph_data$mob$nodes <- temp_current$nodes
+    graph_data$mob$edges <- temp_current$edges
+    
+    Citizen_data$citizen$koef_sc    [Citizen_data$citizen$year == actual_time$year] <- input$citizen_growth
+    Citizen_data$citizen$num_citizen[Citizen_data$citizen$year == actual_time$year] <- Citizen_data$citizen$value0[Citizen_data$citizen$year == actual_time$year]*(1+input$citizen_growth/100)
+    showNotification(ui = "Матрица пересчитана, по изменениям численности населения", type = c("message"))
+  })
+  # Контроль событий по изменению кол-ва потребления ресурсов !!!            ####
+  # Вывод valueBox фактических и сценарных значений к.потребления ресурсов   
+  output$resourceValue0 <- renderValueBox({
+    valueBox(value = tags$p(as.integer(graph_data$mob$edges %>% 
+                                         filter (to_label %in% consumption_group$consuming) %>%
+                                         summarize(value0 = sum(value0)) %>% select(value0)),
+                            style = "font-family: Panton; font-size: 10;"),
+             subtitle = tags$p("Было", style = "font-family: Panton; font-weight: bold; font-size: 10;"),
+             color = "yellow"
+    ) # valueBox(
+  }) # output$resourceValue0 <- renderValueBox({
+  output$resourceValue  <- renderValueBox({
+    valueBox(value = tags$p(as.integer(graph_data$mob$edges %>% 
+                                         filter (to_label %in% consumption_group$consuming) %>%
+                                         summarize(value = sum(value)) %>% select(value)),
+                            style = "font-family: Panton; font-size: 10;"),
+             subtitle = tags$p("Стало", style = "font-family: Panton; font-weight: bold; font-size: 10;"),
+             color = "teal"
+    ) # valueBox(
+  }) # output$resourceValue0 <- renderValueBox({
+  # Рендеринг выпадающих списков для изменения удельного потребления
+  # Исходная отрасль
+  output$control_from_ui <- renderUI({
+    selectInput (inputId  = 'control_from',
+                 label    = "Выпуск из отрасли",
+                 choices  = as.list(graph_data$mob$edges %>% select(from_label)), 
+                 selected = control_edge$control_from_restore,
+                 multiple = FALSE) })
+  # Целевая отрасль
+  output$control_to_ui <- renderUI({
+    selectInput (inputId  = 'control_to',
+                 label    = "Потребление в отрасли",
+                 choices  = as.list(graph_data$mob$edges %>% filter (from_label %in% input$control_from ) %>% select(to_label)), 
+                                                                     # & to_label !=   "Парниковые газы") 
+                 selected = control_edge$control_to_restore,
+                 multiple = FALSE) })
+  # Реагирование на измерение слайдера удельного потребления записью в вектор управления 
+  observeEvent(input$multy_res, { 
+    # NROW(init_graph$mob$edge %>% filter(from_label == "Газоснабжение",  to_label == "Государство"))
+    # init_graph$mob$edges$koef_sc[init_graph$mob$edges$from_label == "Газоснабжение" & init_graph$mob$edges$to_label == "Население"] <- 6
+    temp <- graph_data$mob$edges %>% filter (from_label %in% input$control_from,  to_label %in% input$control_to)
+    control_edge$control_from_restore <- input$control_from
+    control_edge$control_to_restore   <- input$control_to
+    if(NROW(temp) != 0){
+      graph_data$mob$edges$koef_sc[graph_data$mob$edges$from_label == control_edge$control_from_restore & 
+                                     graph_data$mob$edges$to_label == control_edge$control_to_restore    ] <- input$multy_res
+      showNotification(ui = paste0("Изменено удельное потребление в сфере /", input$control_to, "/ продукции выпускаемой сферой /", input$control_from, "/ на ", input$multy_res, "%"))
+      updateSelectInput(session, 'control_from', selected = control_edge$control_from_restore)
+      updateSelectInput(session, 'control_to'  , selected = control_edge$control_to_restore)
+      }
+    })
+  # Реагирование на выбор иной группы производителей обновлением слайдера
+  observeEvent(input$control_from, { 
+    temp <- graph_data$mob$edges %>% filter (from_label %in% input$control_from,  to_label %in% input$control_to)
+    if(NROW(temp) != 0){updateSliderInput(session, "multy_res", value = temp$koef_sc)  } })
+  # Реагирование на выбор иной группы потребителей обновлением слайдера
+  observeEvent(input$control_to, { 
+    temp <- graph_data$mob$edges %>% filter (from_label %in% input$control_from,  to_label   %in% input$control_to)
+    if(NROW(temp) != 0){updateSliderInput(session, "multy_res", value = temp$koef_sc) } })
+    # Реагирование на нажатие кнопки "Calc"
+  observeEvent(input$mob_recalc_consumption, {
+    # Вызов изменений
+    delta_ud_in <- graph_data$mob$edges %>% select(from_label, to_label, value = koef_sc) %>% filter(value != 0)
+    # Отправляем на изменение граф 5-го уровня
+    temp  <- coef_func (data     = graph_data_5level$mob,  # граф 5го уровня from,to,value
+                        delta_ud = delta_ud_in,            # дата фрейм from_label, to_label, value (+%)
+                        level    = input$mob_level_choice)       # уровень детализации
+    # Переключим граф с 5го уровня на нужный
+    temp2 <- mob_graph_switch_level(data = temp, level_new = input$mob_level_choice)
+    graph_data$mob$nodes <- temp2$nodes
+    graph_data$mob$edges <- temp2$edges
+    })
+  
+  observeEvent( input$mob_recalc_refresh, {
+    graph_data$mob$edges <- graph_data$mob$edges %>% 
+      mutate(koef_sc = 0, value = value0)
+    updateSliderInput(session, "multy_res", value = 0)
+    showNotification(ui = "Сценарные значения коэффицентов обнулены")
+  })
+  
+  # Вывод valueBox фактических и сценарных значений для населения            ####
+  output$citizenValue0 <- renderValueBox({
+    valueBox(value = tags$p(as.integer(Citizen_data$citizen %>% 
+                                         filter (year == actual_time$year) %>%
+                                         select (value0)),
+                            style = "font-family: Panton; font-size: 10;"),
+             subtitle = tags$p("Было", style = "font-family: Panton; font-weight: bold; font-size: 10;"),
+             color = "yellow"
+    ) # valueBox(
+  }) # output$resourceValue0 <- renderValueBox({
+  output$citizenValue  <- renderValueBox({
+    valueBox(value = tags$p(as.integer(Citizen_data$citizen %>% 
+                                         filter (year == actual_time$year) %>%
+                                         select (num_citizen)),
+                            style = "font-family: Panton; font-size: 10;"),
+               subtitle = tags$p("Стало", style = "font-family: Panton; font-weight: bold; font-size: 10;"),
+             color = "teal"
+    ) # valueBox(
+  }) # output$resourceValue0 <- renderValueBox({
+  
+
+  # Вывод valueBox фактических и сценарных значений парниковых газов         ####
+  output$emissionValue0 <- renderValueBox({
+    valueBox(value    = tags$p(graph_data$mob$edges %>% filter (to_label == "Парниковые газы") %>% summarize(value0 = sum(value0)) %>% select(value0), 
+                               style = "font-family: Panton; font-size: 12;"),
+             subtitle = tags$p("CO2, тонн", style = "font-family: Panton; font-weight: bold; font-size: 10;"),
+             color    = "black" ) # valueBox( emissionValue0
+  }) # output$resourceValue0 <- renderValueBox({
+  output$emissionValue  <- renderValueBox({
+    valueBox(value    = tags$p(graph_data$mob$edges %>% filter (  to_label == "Парниковые газы") %>% summarize(value = sum(value)) %>% select(value), 
+                               style = "font-family: Panton; font-size: 12;"),
+             subtitle = tags$p("CO2, тонн", style = "font-family: Panton; font-weight: bold; font-size: 10;"),
+             color    = "black" ) # valueBox( emissionValue
+  }) # output$resourceValue0 <- renderValueBox({ 
+  # Стали суммарные затраты-выпуск
+  output$importValue_vb       <- renderValueBox({
+    temp_impo <-  graph_data$mob$nodes %>% filter (group == "Импорт"     ) %>% group_by(group) %>% summarize(value = sum(value)) %>% select(value) %>% as.integer()
+    valueBox(value = tags$p(temp_impo, style = "font-family: Panton; font-size: 14;"), subtitle = tags$p("Импорт, т.у.т ", style = "font-family: Panton; font-weight: bold; font-size: 10;") , color  = "olive" ) }) # output$resourceValue0 <- renderValueBox({
+  output$losesValue_vb        <- renderValueBox({ 
+    
+    temp_impo <-  graph_data$mob$nodes %>% filter (group == "Импорт"     ) %>% group_by(group) %>% summarize(value = sum(value)) %>% select(value) %>% as.integer()
+    temp_cons <-  graph_data$mob$nodes %>% filter (group == "Потребление") %>% group_by(group) %>% summarize(value = sum(value)) %>% select(value) %>% as.integer()
+    temp_prod <-  temp_impo - temp_cons
+    valueBox(value = tags$p(temp_prod, style = "font-family: Panton; font-size: 14;"), subtitle = tags$p("- Затраты", style = "font-family: Panton; font-weight: bold; font-size: 10;"), color  = "green" ) }) # output$resourceValue0 <- renderValueBox({
+  output$consumptionValue_vb  <- renderValueBox({
+    temp_cons <-  graph_data$mob$nodes %>% filter (group == "Потребление") %>% group_by(group) %>% summarize(value = sum(value)) %>% select(value) %>% as.integer()
+    valueBox(value = tags$p(temp_cons, style = "font-family: Panton; font-size: 14;"), subtitle = tags$p("= Потребление", style = "font-family: Panton; font-weight: bold; font-size: 10;"), color  = "orange") }) # output$resourceValue0 <- renderValueBox({
+  # Были суммарные затраты-выпуск
+  output$importValue0_vb      <- renderValueBox({
+    temp_impo <-  graph_data$mob$nodes %>% filter (group == "Импорт"     ) %>% group_by(group) %>% summarize(value0 = sum(value0)) %>% select(value0) %>% as.integer()
+    valueBox(value = tags$p(temp_impo, style = "font-family: Panton; font-size: 14;"), subtitle = tags$p("Импорт, т.у.т", style = "font-family: Panton; font-weight: bold; font-size: 10;") , color  = "olive" ) }) # output$resourceValue0 <- renderValueBox({
+  output$losesValue0_vb       <- renderValueBox({
+    temp_impo <-  graph_data$mob$nodes %>% filter (group == "Импорт"     ) %>% group_by(group) %>% summarize(value0 = sum(value0)) %>% select(value0) %>% as.integer()
+    temp_cons <-  graph_data$mob$nodes %>% filter (group == "Потребление") %>% group_by(group) %>% summarize(value0 = sum(value0)) %>% select(value0) %>% as.integer()
+    temp_prod <-  temp_impo - temp_cons
+    valueBox(value = tags$p(temp_prod, style = "font-family: Panton; font-size: 14;"), subtitle = tags$p("- Затраты", style = "font-family: Panton; font-weight: bold; font-size: 10;"), color  = "green" ) }) # output$resourceValue0 <- renderValueBox({
+  output$consumptionValue0_vb <- renderValueBox({
+    temp_cons <- graph_data$mob$nodes %>% filter (group == "Потребление") %>% group_by(group) %>% summarize(value0 = sum(value0)) %>% select(value0) %>% as.integer()
+    valueBox(value = tags$p(temp_cons, style = "font-family: Panton; font-size: 14;"), subtitle = tags$p("= Потребление", style = "font-family: Panton; font-weight: bold; font-size: 10;"), color  = "orange") }) # output$resourceValue0 <- renderValueBox({
+  
+  # Контроль событий по Сохранению Балансовой модели                         ####
+  output$Network1_safe_button <- renderUI({actionButton("Network1_safe"          , label = NULL, icon = icon("save"))})   # Отрисовка кнопки сохранения Балансовой модели
+  output$Network1_safe_name   <- renderUI({textInput   ('Network1_safe_name_text', label = NULL, placeholder = graph_filename$mob$file) })   # Строка для наименование файла для сохранения Модели
+  # Обработка нажатия кнопки сохранения Балансовой Модели
+  observeEvent(input$Network1_safe, {
+    # При условии нажатия на кнопку "Сохранить" переименовывываем текущий файл с графом МОБа в архивный последний
+    if (input$Network1_safe_name_text != "") {graph_filename$mob$file <- input$Network1_safe_name_text }
+    #Сохраняем конфигурацию текущего графа
+           graph_data$mob$confi <- network_save_confi()
+    graph_data_5level$mob$confi <- network_save_confi()
+    #Сохраняем текущий граф
+    drop_save_to_temp_to_DF ( graph_save = graph_data_5level, # сохраняемый граф
+                              type_net = "mob",   # тип сохраняемого графа mob, method, mind
+                              version  = graph_filename$mob$file)
+    # Заберем список всех имеющихся наборов данных
+    # drop_dir(paste0("/MOBSKI/","6. Method/"), dtoken = token) %>% filter (.tag == "file") %>% select (name)
+    
+    list_mob_files_for_upload <- drop_dir(paste0("/MOBSKI/", set_graph_types$path[set_graph_types$type == "mob"]), dtoken = token) %>% filter (.tag == "file") %>% select (value = name) %>% as.tibble() %>% filter(str_detect(value, "edges")) %>% mutate(value = str_sub(value, start = 5L, end = -11L))
+    updateSelectInput(session, "input_file_mob_upload", choices = list_mob_files_for_upload, selected = graph_filename$mob$file)
+  }) #  observeEvent(input$Network1_safe, {
+  
+  # Контроль событий по Загрузке   Балансовой модели                         ####
+  output$Network1_upload_button          <- renderUI({actionButton("Network1_load", label = NULL, icon = icon("upload"))}) # Отрисовка кнопки загрузки Балансовой модели
+  # Список существующих файлов для сохранения Модели
+  output$Network1_upload_name            <- renderUI({      
+    list_mob_files_for_upload <- drop_dir(paste0("/MOBSKI/", set_graph_types$path[set_graph_types$type == "mob"]), dtoken = token) %>% filter (.tag == "file") %>% select (value = name) %>% as.tibble() %>% filter(str_detect(value, "edges")) %>% mutate(value1 = str_sub(value, start = 5L, end = -11L))
+    selectInput('input_file_mob_upload', label = NULL, choices = list_mob_files_for_upload$value1, selected = str_replace(graph_filename$mob$nodes, "_edges.csv", ""))
+  }) #   output$input_file_mob_upload_list <- renderUI({
+  
+  # Обработка нажатия кнопки загрузки сценария Балансовой Модели
+  observeEvent(input$Network1_load, {
+    # При нажатии кнопки "Upload" запоминаем актуальную версию с которой работаем
+    graph_filename$mob$file<- input$input_file_mob_upload
+    # считывание файлов
+    temp <- drop_read_to_temp_to_DF (version_index = input$input_file_mob_upload, # Наименование версии загружаемого файла
+                                               type_graph    = "mob")
+    
+    graph_data_5level$mob$nodes <- temp$nodes 
+    graph_data_5level$mob$edges <- temp$edges 
+    graph_data_5level$mob$confi <- temp$confi
+    
+    temp2 <- mob_graph_switch_level(graph_data_5level$mob, input$mob_level_choice)
+
+    graph_data$mob$nodes <-  temp2$nodes
+    graph_data$mob$edges <-  temp2$edges
+    graph_data$mob$confi <-  temp2$confi
+        
+    showNotification(ui = paste0("Загружена версия балансовой модели ",input$input_file_mob_upload), type = "warning")
+    network_update_confi (graph_data$mob$confi)
+    visNetworkProxy("mob_graph_render") %>% visUpdateEdges(edges = graph_data$mob$edges) %>% visUpdateNodes(nodes = graph_data$mob$nodes)
+  }) # observeEvent(input$Network2_load, {
+  
+  
+  #-------Методик---------------------------------------а---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  output$Method <- renderText({ "Краткое описание методики" })
+  
+  # Забираем актуальные данные по графу Методики
+
+  
+  # Вывод графа с методикой                              ####
+  # Перерисовка графа после редактирования               ####
+  output$Network2_render_button <- renderUI({actionButton("Network2_render_button_1", label = "Обновить граф после изменений", icon = icon("refresh"))})
+  observeEvent(input$Network2_render_button_1, {
+    graph_data$method$nodes <- graph_data$method$nodes %>% mutate(title = label)
+    graph_data$method$edges <- graph_data$method$edges
+    
+    # method$edges <- method$edges %>% select(-label_from.x, -label_from.y, -label_to.x, -label_to.y)
+    graph_data$method$edges <- graph_data$method$edges %>%
+      select (id, from, to, value, title, color) %>% 
+      left_join(graph_data$method$nodes %>% select(id, label_from = label), by = c("from" = "id")) %>%
+      left_join(graph_data$method$nodes %>% select(id, label_to   = label), by = c("to" = "id")) %>%
+      left_join(color_method, by = c("title" = "Method_edge")) %>%
+      mutate(color = Method_edge_color) %>% select(-Method_edge_color) %>% 
+      select (label_from, label_to, value, title, color, value, from, to, id) 
+ 
+  }) #  observeEvent(input$Network2_rerender_button
+  
+  
+  # Вспом. табл для табл с методикой
+  values_method_table <- reactiveValues()
+  
+  # 1. Редактирование графа                              ####
+  # https://progi.pro/kak-izvlech-i-sohranit-izmeneniya-manipulyacii-visnetwork-v-shiny-4162949
+  observeEvent(input$method_graph_render_graphChange, {
+    if (input$method_graph_render_graphChange$cmd == "addNode")      {
+      new_id   <- max(graph_data$method$nodes$id)+1
+      new_node <- data.frame( id    = input$method_graph_render_graphChange$id,
+                              label = input$method_graph_render_graphChange$label,
+                              group = "нет",
+                              value = 0,
+                              level = ifelse(!is.null(input$method_graph_render_graphChange$level),input$method_graph_render_graphChange$level,0),
+                              color = input$method_graph_render_graphChange$color,
+                              x     = 0,
+                              y     = 0
+      )
+      
+      graph_data$method$nodes <- graph_data$method$nodes %>% 
+        mutate(id = as.character(id)) %>% 
+        bind_rows(new_node) %>%
+        mutate(id = ifelse(id == input$method_graph_render_graphChange$id, new_id, id)) %>% 
+        mutate(id = as.numeric(id))
+      
+      #   visUpdateNodes(method$nodes %>% filter (id == new_id))
+      
+    } # If the user added a node, add it to the data frame of nodes.
+    else if(input$method_graph_render_graphChange$cmd == "addEdge")        {
+      new_id   <- max(graph_data$method$edges$id)+1
+      new_edge <- data.frame(id    = input$method_graph_render_graphChange$id,
+                             from  = input$method_graph_render_graphChange$from,
+                             to    = input$method_graph_render_graphChange$to  ,
+                             value = 0,
+                             title = "Статистика",
+                             color = "#FAC003"
+      )
+      
+      graph_data$method$edges <- graph_data$method$edges %>% 
+        mutate(id = as.character(id)) %>% 
+        bind_rows(new_edge) %>%
+        mutate(id = ifelse(id == input$method_graph_render_graphChange$id, new_id, id)) %>% 
+        mutate(id = as.numeric(id))
+      
+    } # If the user added an edge, add it to the data frame of edges.
+    else if(input$method_graph_render_graphChange$cmd == "editNode")       {
+      
+      edit_id <- input$method_graph_render_graphChange$id
+      temp = graph_data$method$nodes
+      temp$label[temp$id == edit_id] <- input$method_graph_render_graphChange$label
+      temp$level[temp$id == edit_id] <- input$method_graph_render_graphChange$level
+      temp$color[temp$id == edit_id] <- input$method_graph_render_graphChange$color
+      graph_data$method$nodes <-  temp
+      
+      visNetworkProxy("method_graph_render") %>% 
+        visUpdateNodes(nodes = graph_data$method$nodes %>% filter (id == edit_id))
+    } # If the user edited a node, update that record.
+    else if(input$method_graph_render_graphChange$cmd == "editEdge")       {
+      temp = graph_data$method$edges
+      edit_id <- input$method_graph_render_graphChange$id
+      if(!is.null(input$method_graph_render_graphChange$from)) {
+        temp$from   [temp$id == edit_id] = input$method_graph_render_graphChange$from}
+      if(!is.null(input$method_graph_render_graphChange$to))   { 
+        temp$to     [temp$id == edit_id] = input$method_graph_render_graphChange$to}
+      
+      temp$value  [temp$id == edit_id] = input$method_graph_render_graphChange$value
+      temp$title  [temp$id == edit_id] = input$method_graph_render_graphChange$title
+      temp$color  [temp$id == edit_id] = input$method_graph_render_graphChange$color
+      
+      graph_data$method$edges = temp
+      
+      visNetworkProxy("method_graph_render") %>% 
+        visUpdateEdges(edges = graph_data$method$edges %>% filter (id == edit_id))
+    } # If the user edited an edge, update that record.
+    else if(input$method_graph_render_graphChange$cmd == "deleteElements") { 
+      for(node.id in input$method_graph_render_graphChange$nodes) {
+        temp = graph_data$method$nodes
+        temp = temp[temp$id != node.id,]
+        graph_data$method$nodes = temp
+        visNetworkProxy("method_graph_render") %>% visUpdateNodes(graph_data$method$nodes %>% filter(id == node.id))
+      }
+      
+      for(edge.id in input$method_graph_render_graphChange$edges) {
+        temp = graph_data$method$edges
+        temp = temp[temp$id != edge.id,]
+        graph_data$method$edges = temp
+        visNetworkProxy("method_graph_render") %>% visUpdateEdges(graph_data$method$edges %>% filter(id == edge.id))
+      }
+      
+    } # If the user deleted something, remove those records.
+  })
+  
+  # 2. Редактирование таблицы с узлами методики          ####
+  observeEvent(input$method_nodes_table, {
+    temp <- hot_to_r(input$method_nodes_table) %>% 
+      mutate_all(funs(replace(., is.na(.), 0))) %>% 
+      mutate(id = ifelse(id == 0, max(id)+1, id))
+
+    graph_data$method$nodes <- temp
+    
+    # visNetworkProxy("method_graph_render") %>% visUpdateNodes(graph_data$method$nodes) #%>%  visUpdateEdges(method$edges)
+    })      
+  # 2.1. Вывод на экран таблицы с узлами методики
+   output$method_nodes_table <- renderRHandsontable({
+     rhandsontable(graph_data$method$nodes, stretchH = "all", useTypes = F) })
+   
+  # 3. Редактирование таблицы с потоками методики        ####
+   observeEvent(input$method_edges_table, {
+     temp <- hot_to_r(input$method_edges_table) %>%     
+       mutate_all(funs(replace(., is.na(.), 0))) %>% 
+       mutate(id = ifelse(id == 0, max(id)+1, id))
+     graph_data$method$edges = temp
+     
+     visNetworkProxy("method_graph_render") %>% visUpdateEdges(edges = graph_data$method$edges)
+   })
+  # 2 Вывод на экран таблицы с потоками методики
+   output$method_edges_table <- renderRHandsontable({ 
+     rhandsontable(graph_data$method$edges, stretchH = "all", useTypes = F)  })
+  
+   
+  # 4. Вывод ссылок по методике                          ####
+  output$Links <- renderText({ links })
+  
+
+  # Контроль событий по Сохранению Методики              ####
+  output$Network2_safe_button    <- renderUI({actionButton("Network2_safe"         , label = NULL, icon = icon("save"  ))})
+  # Строка для наименование файла для сохранения
+  output$Network2_safe_name      <- renderUI({   textInput('input_file_method_save', label = NULL, placeholder = graph_filename$method$file) })
+  observeEvent(input$Network2_safe, {
+    
+    # При условии нажатия на кнопку "Сохранить" переименовывываем текущий файл с графом МОБа в архивный последний
+    if (input$input_file_method_save != "") {graph_filename$method$file <- input$input_file_method_save }
+    #Сохраняем конфигурацию текущего графа
+    graph_data$method$confi <- network_save_confi()
+    
+    #Сохраняем текущий граф
+    drop_save_to_temp_to_DF ( graph_save = graph_data, # сохраняемый граф
+                              type_net   = "method",   # тип сохраняемого графа mob, method, mind
+                              version    = graph_filename$method$file)
+    # Заберем список всех имеющихся наборов данных
+
+    list_method_files_for_upload <- drop_dir(paste0("/MOBSKI/", set_graph_types$path[set_graph_types$type == "method"]), dtoken = token) %>% filter (.tag == "file") %>% select (value = name) %>% as.tibble() %>% filter(str_detect(value, "edges")) %>% mutate(value = str_sub(value, start = 8L, end = -11L))
+    updateSelectInput(session, "input_file_method_upload", choices = list_method_files_for_upload, selected = graph_filename$method$file)
+  }) #  observeEvent(input$Network2_safe, {
+  
+  # Контроль событий по Загрузке Методики                ####
+  output$Network2_upload_button  <- renderUI({actionButton("Network2_load"         , label = NULL, icon = icon("upload"))})
+  output$Network2_upload_name    <- renderUI({
+    list_method_files_for_upload <- drop_dir(paste0("/MOBSKI/", set_graph_types$path[set_graph_types$type == "method"]), dtoken = token) %>% filter (.tag == "file") %>% select (value = name)%>% as.tibble() %>% filter(str_detect(value, "edges")) %>% mutate(value1 = str_sub(value, start = 8L, end = -11L))
+    selectInput('input_file_method_upload', label = NULL, choices = list_method_files_for_upload$value1, selected = str_replace(graph_filename$method$nodes, "_edges.csv", ""))
+  }) #   output$Network2_upload_name <- renderUI({
+  
+  observeEvent(input$Network2_load, {
+    # При нажатии кнопки "Upload" запоминаем актуальную версию с которой работаем
+    graph_filename$method$file<- input$input_file_method_upload
+    # считывание файлов
+    graph_data$method <- drop_read_to_temp_to_DF (version_index = input$input_file_method_upload, # Наименование версии загружаемого файла
+                                                  type_graph    = "method")
+    showNotification(ui = paste0("Загружена версия методики - ",input$input_file_method_upload), type = "warning")
+    network_update_confi (graph_data$method$confi)
+    visNetworkProxy("method_graph_render") %>% visUpdateEdges(edges = graph_data$method$edges) %>% visUpdateNodes(nodes = graph_data$method$nodes)
+  }) # observeEvent(input$Network2_load, {
+  
+  
+  
+  
+  #_____________DT.Note_________________________________________####
+  # Обработка событий по редактированию графа из интерфейса     ####
+  observeEvent(input$mind_graph_render_graphChange, {
+    if (input$mind_graph_render_graphChange$cmd     == "addNode")        {
+      new_id   <- max(graph_data$mind$nodes$id)+1
+      new_node <- data.frame( id    = ifelse(!is.null(input$mind_graph_render_graphChange$id     ), input$mind_graph_render_graphChange$id, new_id),
+                              label = ifelse(!is.null(input$mind_graph_render_graphChange$label  ), input$mind_graph_render_graphChange$label, ""),
+                              text  = ifelse(!is.null(input$mind_graph_render_graphChange$text   ), input$mind_graph_render_graphChange$text , ""), 
+                              group = ifelse(!is.null(input$mind_graph_render_graphChange$group  ), input$mind_graph_render_graphChange$group,"Заметка"),  
+                              color = ifelse(!is.null(input$mind_graph_render_graphChange$color  ), input$mind_graph_render_graphChange$color,"#67B5CC"))
+      
+      graph_data$mind$nodes <- graph_data$mind$nodes %>% 
+        mutate(id = as.character(id)) %>% 
+        bind_rows(new_node) %>%
+        mutate(id = ifelse(id == input$mind_graph_render_graphChange$id, new_id, id)) %>% 
+        mutate(id = as.numeric(id))
+      
+      # visUpdateNodes(method$nodes)
+      
+    } # If the user added a node, add it to the data frame of nodes.
+    else if(input$mind_graph_render_graphChange$cmd == "addEdge")        {
+      new_id   <- max(graph_data$mind$edges$id)+1
+      new_id   <- ifelse(is.infinite(new_id), 1, new_id)
+      new_edge <- data.frame(id    = ifelse(!is.null(input$mind_graph_render_graphChange$id),input$mind_graph_render_graphChange$id, new_id),
+                             from  = input$mind_graph_render_graphChange$from,
+                             to    = input$mind_graph_render_graphChange$to  ,
+                             text  = "")
+      
+      graph_data$mind$edges <- graph_data$mind$edges %>% 
+        mutate(id = as.character(id)) %>% 
+        bind_rows(new_edge) %>%
+        mutate(id = ifelse(id == input$mind_graph_render_graphChange$id, new_id, id)) %>% 
+        mutate(id = as.integer(id))
+      
+    } # If the user added an edge, add it to the data frame of edges.
+    else if(input$mind_graph_render_graphChange$cmd == "editNode")       {
+      
+      edit_id <- input$mind_graph_render_graphChange$id
+      temp = graph_data$mind$nodes
+      temp$label[temp$id == edit_id] <- input$mind_graph_render_graphChange$label
+      temp$group[temp$id == edit_id] <- input$mind_graph_render_graphChange$group
+      temp$color[temp$id == edit_id] <- input$mind_graph_render_graphChange$color
+      temp$text[temp$id == edit_id] <- input$mind_graph_render_graphChange$text
+      graph_data$mind$nodes <-  temp
+      
+      visNetworkProxy("mind_graph_render") %>% 
+        visUpdateNodes(nodes = graph_data$mind$nodes %>% filter (id == edit_id))
+    } # If the user edited a node, update that record.
+    else if(input$mind_graph_render_graphChange$cmd == "editEdge")       {
+      temp = graph_data$mind$edges
+      edit_id <- input$mind_graph_render_graphChange$id
+      if(!is.null(input$mind_graph_render_graphChange$from)) {
+        temp$from   [temp$id == edit_id] = input$mind_graph_render_graphChange$from}
+      if(!is.null(input$mind_graph_render_graphChange$to))   { 
+        temp$to     [temp$id == edit_id] = input$mind_graph_render_graphChange$to}
+      
+      temp$text  [temp$id == edit_id] = input$method_graph_render_graphChange$text
+
+      graph_data$mind$edges = temp
+      
+      visNetworkProxy("mind_graph_render") %>% 
+        visUpdateEdges(edges = graph_data$mind$edges %>% filter (id == edit_id))
+    } # If the user edited an edge, update that record.
+    else if(input$mind_graph_render_graphChange$cmd == "deleteElements") { 
+      for(node.id in input$mind_graph_render_graphChange$nodes) {
+        temp = graph_data$mind$nodes
+        temp = temp[temp$id != node.id,]
+        graph_data$mind$nodes = temp
+        visNetworkProxy("mind_graph_render") %>% visUpdateNodes(graph_data$mind$nodes %>% filter(id == node.id))
+      }
+      
+      for(edge.id in input$mind_graph_render_graphChange$edges) {
+        temp = graph_data$mind$edges
+        temp = temp[temp$id != edge.id,]
+        graph_data$mind$edges = temp
+        visNetworkProxy("mind_graph_render") %>% visUpdateEdges(graph_data$mind$edges %>% filter(id == edge.id))
+      }
+      
+    } # If the user deleted something, remove those records.
+    # Автоматическое сохранение убрано
+  })
+  # Редактирование таблицы с узлами DT.Notes                    ####
+  observeEvent(input$mind_nodes_table, {
+    temp <- hot_to_r(input$mind_nodes_table) %>% 
+      mutate_all(funs(replace(., is.na(.), 0))) %>% 
+      mutate(id = ifelse(id == 0, max(id)+1, id))
+    
+    graph_data$mind$nodes <- temp
+    
+    set_nodes <- graph_data$mind$nodes %>% distinct(id)
+    
+    temp1 <- graph_data$mind$edges %>% filter(from %in% set_nodes$id, to %in% set_nodes$id)
+    graph_data$mind$edges <- temp1
+    
+    # visNetworkProxy("mind_graph_render") %>% visUpdateNodes(graph_data$mind$nodes) 
+  })      
+  # Вывод на экран таблицы с узлами заметок                     ####
+  output$mind_nodes_table <- renderRHandsontable({
+    rhandsontable(graph_data$mind$nodes, stretchH = "all", useTypes = F) })
+  
+  # Кнопочка сохранить изменения графа с DT.Notes               ####
+  output$Network3_safe_button <- renderUI({actionButton("Network3_safe", label = NULL, icon = icon("save"))})
+  # Сохранение графа при нажатии кнопочки 
+  observeEvent(input$Network3_safe, {
+    graph_data$mind$confi <- network_save_confi() # обновление конфигурации
+    drop_save_to_temp_to_DF (graph_save = graph_data, type_net = "mind", version = "actual")
+  })
+  output$mind_edge_table <- renderTable (background = "teal", hover    = TRUE, striped  = TRUE, bordered = TRUE, graph_data$mind$edges)
+  
+
+  #_____________Прочее _________________________________________----------------------------------------------------------------------####
+
+  
+  # Контроль событий по визуализации                            ####
+  #  1. Изменение типа кривой
+  observeEvent (input$type_edge, {
+    visNetworkProxy("mob_graph_render")    %>% visEdges(smooth = list(type = input$type_edge))
+    visNetworkProxy("method_graph_render") %>% visEdges(smooth = list(type = input$type_edge))
+    visNetworkProxy("mind_graph_render")   %>% visEdges(smooth = list(type = input$type_edge))
+  })
+  
+  
+  # Функция формирования датафрема с текущими настройками графа ####
+  network_save_confi  <-  function (){
+    config <-  data.frame(
+      enabled_physics  = input$physics, 
+      solver           = input$solver,
+      type_edge        = input$type_edge,
+      enabled_hier     = input$enabledHier,
+      levelSeparation  = input$levelSeparation,
+      nodeSpacing      = input$nodeSpacing,
+      shakeTowards     = input$shakeTowards,
+      sortMethod       = input$sortMethod,
+      blockShifting    = input$blockShifting,
+      edgeMinimization = input$edgeMinimization,
+      direction        = input$direction) 
+    
+    return (config)
+  }
+  
+  # Функция обновления отображения настроек графа               ####
+  network_update_confi<- function (Network){
+    updateCheckboxInput(session, "physics"         , value    = Network$enabled_physics)
+    updateSelectInput  (session, "solver"          , selected = Network$solver)
+    updateSelectInput  (session, "type_edge"       , selected = Network$type_edge)
+    updateCheckboxInput(session, "enabled_hier"    , value    = Network$enabled_hier)
+    updateSliderInput  (session, "levelSeparation" , value    = Network$levelSeparation)
+    updateSelectInput  (session, "shakeTowards"    , selected = Network$shakeTowards)
+    updateSelectInput  (session, "sortMethod"      , selected = Network$sortMethod)
+    updateCheckboxInput(session, "blockShifting"   , value    = Network$blockShifting)
+    updateCheckboxInput(session, "edgeMinimization", value    = Network$edgeMinimization)
+    updateSelectInput  (session, "direction"       , selected = Network$direction)
+  }
+
+  # Функция обновления конфиг. графа при переключении вкладок   ####
+  observeEvent(input$tabSwitch, {network_update_confi(pluck (pluck (graph_data, set_graph_types$type[set_graph_types$tab == input$tabSwitch]), "confi")) })
+  
+  
+
+  
+  
+  # Функция пересчета МОБа с исправленным уд.потреблением       ####
+  coef_func <- function(data,        # Граф с 3мя дата фрейм 5го уровня from,to,value
+                        delta_ud,    # Дата фрейм from, to, koef (%) - edges с изменением удельников
+                        level){  # дата фрем на каком уровне выбран удельник (3,4,5)
+    #---- Константы ####
+    sprv_co <- classif_co2
+    sprv_v  <- classif
+    level   <- paste0("level",level)
+    dem     <- Citizen_data$citizen$num_citizen[Citizen_data$citizen$year == actual_time$year]
+    res_vec2 <- c('Электроэнергия','Природный газ','Вода','Стоки','Транспортные услуги','Продукция','Мазут','Уголь','Дрова','Дизельное топливо','Бензин','Прочие виды топлива','Выбросы парниковых газов')
+    vec_ud   <- c('Удельные расходы государства','Удельные расходы населения','Удельные расходы прочие отрасли','Выбросы парниковых газов')
+    res_vec1 <- c('Электроэнергия','Газоснабжение','Вода','Стоки','Транспортные услуги','Продукция','Мазут','Уголь','Дрова','Дизельное топливо','Бензин','Прочие виды топлива')
+    #---- Подготовка данных ####
+    data_all <- data$edges %>% 
+      select(from = from_label,to = to_label,value = value0)
+    
+    data_11 <- data_all %>% 
+      mutate_all(~replace(., is.na(.), 0)) %>%
+      filter(!to %in% vec_ud) %>% 
+      pivot_wider(names_from = to)  %>% 
+      mutate_all(~replace(., is.na(.), 0))
+    
+    # Создание изменений удельных коэффициентов
+    data_del_ud_0 <- data_all %>% 
+      filter(!to =='Выбросы парниковых газов')%>% 
+      mutate(value = 1) 
+    
+    if (level != 'level5') {
+      data_del_ud_1 <- data_del_ud_0 %>% 
+        left_join(sprv_v %>% select(level5, level),by = c('from' = 'level5')) %>% 
+        rename('level_from' = level) %>% 
+        left_join(sprv_v %>% select(level5, level),by = c('to'   = 'level5')) %>%
+        rename('level_to'   = level) %>% 
+        distinct()
+    } else {data_del_ud_1 <- data_del_ud_0 %>% mutate(level_to = to, level_from = from)} 
+    
+    data_del_ud <- data_del_ud_1 %>% 
+      left_join(delta_ud,by = c('level_from' = 'from_label','level_to' = 'to_label')) %>% 
+      mutate(value.y = ifelse(is.na(value.y),0,value.y), 
+             coef    = value.x + value.y/100) %>% 
+      select(from,to,coef)
+    
+    col_vec <- c('ГУП ТЭК','ПТЭ',	'Прочие','ТГК-1(т)',	'Северо-западная ТЭЦ',	'ТГК-1(э)',	'Интер-РАО',	'Электроснабжение',	'Газоснабжение',
+                 'Водоснабжение',	'Водоотведение',	'Общественный','Личный транспорт',	'Авиация',	'Железнодорожный транспорт',	'Водный транспорт',	'Трубопроводный транспорт',
+                 'Подъемно-транспортные и строительно-дорожные машины',	'Cельскохозяйственный транспорт')
+    
+    col_vec_name <- data_11 %>%
+      filter(from %in% col_vec) %>%
+      rownames_to_column() %>%
+      select(2,1) %>%
+      mutate(rowname = paste0('V',rowname)) %>% 
+      deframe()
+    
+    # Матрица потребителей
+    data_Y <- data_11 %>% 
+      mutate(`Отпуск` = `Население`+`Государство`+`Прочие отрасли`+`Экспорт`,
+             `Выпуск` = `Отпуск` + `ГУП ТЭК`+	`ПТЭ`+	`Прочие`+	`ТГК-1(т)`+	`Северо-западная ТЭЦ`+	`ТГК-1(э)`+	`Интер-РАО`+	`Электроснабжение`+	`Газоснабжение`+
+               `Водоснабжение`+	`Водоотведение`+	`Общественный`+	`Личный транспорт`+	`Авиация`+	`Железнодорожный транспорт`+	`Водный транспорт`+	`Трубопроводный транспорт`+	
+               `Подъемно-транспортные и строительно-дорожные машины`+	`Cельскохозяйственный транспорт`) %>% 
+      select(from,`Отпуск`,`Выпуск`) %>% 
+      filter(from %in% col_vec)
+    
+    #---- Расчет удельных ####
+    vec_r <- data_11 %>% 
+      filter(from %in% res_vec2) %>% 
+      select(from,col_vec) %>% 
+      rbind(q <- data_Y %>% 
+              select(from,`Выпуск`) %>% filter(from %in% col_vec) %>%
+              pivot_wider(names_from = from,values_from = `Выпуск`) %>% 
+              mutate(from = 'all')) %>% 
+      select(from) %>% 
+      rownames_to_column() %>% 
+      mutate(vecr = paste0('V',rowname)) %>% 
+      select(from,vecr) %>% 
+      deframe()
+    
+    # Матрица удельного расхода топлива (импорт)
+    data_r <- data_11 %>% 
+      filter(from %in% res_vec2) %>% 
+      select(from,col_vec) %>% 
+      rbind(q <- data_Y %>% 
+              filter(from %in% col_vec) %>% 
+              select(from,`Выпуск`) %>% 
+              pivot_wider(names_from = from,values_from = `Выпуск`) %>% 
+              mutate(from = 'all')) %>% 
+      select(-from) %>% 
+      t() %>% 
+      as.tibble() %>% 
+      rename(!!!vec_r) %>% 
+      cbind(col_vec) %>% 
+      mutate(across(where(is.numeric), ~ifelse(all %in% c(0,NA) | . %in% c(0,NA), NA, ./all))) %>% 
+      select(-all) %>% 
+      pivot_longer(cols = 1:7,names_to = 'from') %>%
+      rename('to' = 'col_vec')  %>%
+      left_join(data_del_ud) %>%
+      mutate(value = value * coef) %>%
+      select(-coef) %>%
+      pivot_wider(names_from = from) 
+    
+    # Матрица а 
+    data_a <- data_11 %>% 
+      filter(from %in% col_vec) %>% 
+      select(col_vec) %>% 
+      t() %>% 
+      as.tibble() %>% 
+      rename(!!! col_vec_name) %>% 
+      cbind(data_Y %>% 
+              filter(from %in% col_vec) %>% 
+              select(`Выпуск`)) %>% 
+      mutate(across(where(is.numeric), ~ifelse(`Выпуск` == 0, 0, ./`Выпуск`))) %>% 
+      select(-`Выпуск`) %>% 
+      t() %>% 
+      as.tibble() %>% 
+      rename(!!!col_vec_name) %>% 
+      cbind(col_vec) %>% 
+      select(from = col_vec,everything()) %>% 
+      mutate_all(~replace(., is.na(.), 0)) %>% 
+      pivot_longer(cols = 2:20,names_to = 'to') %>% 
+      left_join(data_del_ud) %>% 
+      mutate(value = value * coef) %>% 
+      select(-coef) %>% 
+      pivot_wider(names_from = to) %>% 
+      mutate_all(~replace(., is.na(.), 0))
+    
+    # Матрица е
+    data_e <- data_a %>% 
+      mutate(to = from,
+             value = 1) %>% 
+      select(1,to,value) %>% 
+      pivot_wider(names_from = to) %>% 
+      mutate_all(~replace(., is.na(.), 0))
+    
+    data_e_a <- as.matrix(data_e %>% select(!1)) - as.matrix(data_a %>% select(!1))
+    
+    # Матрица b
+    data_b <- solve(data_e_a) %>% as_tibble() %>% 
+      rename(!!! col_vec_name) 
+    
+    #---- Пересчет потребления ####
+    data_Y1 <- data_11 %>%
+      mutate_all(~replace(., is.na(.), 0)) %>%
+      #filter(!level_5 %in% res_vec) %>%
+      mutate(`Население` = `Население`/dem,
+             `Государство` = `Государство`/dem,
+             `Прочие отрасли` = `Прочие отрасли`/dem,
+             `Экспорт` = `Экспорт`/dem) %>%
+      filter(from %in% col_vec) %>% 
+      select(from,`Население`,`Государство`,`Прочие отрасли`,`Экспорт`) %>%
+      pivot_longer(cols = 2:5, names_to = "to") %>%
+      select(from ,to,value) %>%
+      na.omit() %>% 
+      left_join(data_del_ud) %>% 
+      mutate(value = value * coef * dem) %>% 
+      select(-coef) %>% 
+      pivot_wider(names_from = to) %>% 
+      mutate_all(~replace(., is.na(.), 0))
+    
+    #---- Пересчет выпуска ####
+    data_q1 <- as.tibble(as.matrix(data_b) %*% as.matrix(data_Y1 %>% 
+                                                           mutate(`Отпуск` = `Население`+`Государство`+`Прочие отрасли` + `Экспорт`) %>% 
+                                                           select(`Отпуск`))) %>% 
+      rename('Выпуск' = 'Отпуск') %>% 
+      cbind(col_vec)
+    
+    #---- Пересчет A ####
+    
+    data_a1 <- data_a  %>% 
+      filter(from %in% col_vec) %>% 
+      select(col_vec) %>% 
+      t() %>% 
+      as.tibble() %>% 
+      rename(!!! col_vec_name) %>% 
+      cbind(data_q1 %>% 
+              select(`Выпуск`)) %>% 
+      mutate(across(where(is.numeric), ~ifelse(`Выпуск` == 0, 0, .*`Выпуск`))) %>% 
+      select(-`Выпуск`) %>% 
+      t() %>% 
+      as.tibble() %>% 
+      rename(!!!col_vec_name) %>% 
+      cbind(col_vec) %>% 
+      select(from = col_vec,everything()) %>% 
+      pivot_longer(cols = col_vec, names_to = 'to')
+    
+    #---- Пересчет R ####
+    
+    data_r1 <- data_r  %>% 
+      cbind(data_q1 %>% 
+              select(`Выпуск`)) %>% 
+      mutate(across(where(is.numeric), ~ifelse(`Выпуск` %in% c(0,NA) | . %in% c(0,NA), NA, .*`Выпуск`))) %>% 
+      select(-`Выпуск`,-to) %>% 
+      t() %>% 
+      as.data.frame () %>% 
+      rename(!!!col_vec_name) %>% 
+      rownames_to_column() %>% 
+      rename('from' = 'rowname') %>% 
+      pivot_longer(cols = col_vec, names_to = 'to')
+    
+    
+    #---- Пересчет U ####
+    data_co1 <- rbind(data_r1,data_a1,data_Y1 %>% 
+                        select(from,`Прочие отрасли`,`Население`,`Государство`) %>% 
+                        pivot_longer(cols = 2:4,names_to = 'to')) %>% 
+      filter(from %in% res_vec1) %>% 
+      na.omit() %>% 
+      mutate(from = ifelse(from == 'Газоснабжение', 'Природный газ', from)) %>% 
+      mutate(from = as.character(from)) %>% 
+      left_join(sprv_co %>% select(1,5),by = c('from' = 'type_fuel')) %>% 
+      mutate(value = value * coef_tut_from_co2,
+             from = to,
+             to = 'Парниковые газы') %>% 
+      select(1:3) %>% 
+      group_by(from,to) %>% 
+      summarise(value = sum(value)) %>% 
+      ungroup()
+    
+    #---- Сборка листа ####
+    data_all_5 <- rbind(data_a1,data_r1,data_co1, data_Y1 %>% pivot_longer(cols = 2:5,names_to = 'to')) %>% 
+      filter(!value == 0,!is.na(value)) %>% 
+      select(from_label = from,to_label = to, value1 = value)
+    
+    data_5e <- data$edges %>%
+      left_join (data_all_5) %>% 
+      mutate    (value = value1) %>% 
+      select    (-value1) %>% 
+      left_join (data_del_ud %>% select(from_label = from,to_label = to,coef)) %>% 
+      mutate    (koef_sc = coef*100-100, 
+                 title   = paste0(value, ifelse(to_label == "Парниковые газы", "тонн", ",т.у.т."))) %>% 
+      select    (-coef) 
+    
+     out_list <- mob_graph_restore(list(nodes = data$nodes, edges = data_5e, confi = data$confi))
+
+     graph_data_5level$mob$nodes <- out_list$nodes    
+     graph_data_5level$mob$edges <- out_list$edges
+     
+    return(out_list)
+  }  # Уровень с которого приходит изменение удельников 
+  
+  # Функция изменения выбросов при изменения количества насел   ####
+  dem_func <- function(data,         # Граф с 3мя дата фрейм 5го уровня from,to,value
+                       delta_dem) {  # Число с % Изменения населения
+    
+    del_dem <- data$edges %>% 
+      filter(to_label =='Население')  %>% 
+      mutate(value = delta_dem) %>% 
+      select(from_label, to_label,value)
+    
+    data_test <- coef_func(data,    # граф с 3мя дата фрейм 5го уровня from,to,value
+                           del_dem,# дата фрейм from, to, koef (%)
+                           level = 5)
+  }
+  
+  
+  
+} # server_1 <- function
+

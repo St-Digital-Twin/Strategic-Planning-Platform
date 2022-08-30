@@ -1,0 +1,135 @@
+
+ui <- tagList(navbarPage(
+  "EuroChem analytical panel",# Основнное название в левом верхнем углу
+  theme = shinytheme("cosmo"),# shiny тема можно выбрать https://rstudio.github.io/shinythemes/ отвечает за верхнюю панель и задний фон
+  useShinydashboard(),
+  tags$style(HTML("
+    .tabbable > .nav > li > a                  {background-color: aqua;  color:navy}
+    .tabbable > .nav > li > a[data-value='Plot'] {background-color: navy;   color:gray}
+    .tabbable > .nav > li > a[data-value='Map'] {background-color: navy;  color:gray}
+    .tabbable > .nav > li > a[data-value='Contact Us'] {background-color: navy;  color:gray}
+    .tabbable > .nav > li > a[data-value='t3'] {background-color: green; color:white}
+    .tabbable > .nav > li[class=active]    > a {background-color: navy; color:white}
+    .skin-blue .main-sidebar .sidebar .sidebar-menu .active a{
+ background-color: rgb(107,194,0);
+color: rgb(255,255,255);font-weight: bold;font-size: 18px;
+}
+  # ")),
+  tags$style(HTML('body {font-family: "Panton"}')),# Некоторые настройки для красоты
+  tabPanel("Pipeline",#Первая вкладка
+           fluidRow(
+
+    # Application title
+    # titlePanel("Old Faithful Geyser Data"),
+
+    # Sidebar with a slider input for number of bins
+    # sidebarLayout(
+    #     sidebarPanel(
+    #         sliderInput("bins",
+    #                     "Number of bins:",
+    #                     min = 1,
+    #                     max = 50,
+    #                     value = 30)
+    #     ),
+    # 
+    #     # Show a plot of the generated distribution
+    #     mainPanel(
+    #         plotOutput("distPlot")
+    #     )
+    # )
+             box(width = 12,title = 'Инструкция',  background = 'navy',collapsible = TRUE,
+                                      box(width = 6,title = 'Структура потока преобразования данных',  background = 'navy',collapsible = TRUE,
+                                          htmlOutput("inst1")),
+                                      box(width = 6,title = 'Таблица выбранного узла данных',  background = 'navy',collapsible = TRUE,
+                                          htmlOutput("inst2")),collapsed = TRUE
+                                      ),
+             box(width = 12, title = a('Data process flow', style = 'color:#001F3F; vspace:1;'), collapsible = TRUE, background = 'gray',
+                 visNetworkOutput("visnetwork", width = 'auto', height = "450px") %>% withSpinner(type = getOption("spinner.type", default = 6),color = "#001F3F"),
+                 actionButton('SavePos', 'Save Positions', style = "color: #fff; background-color: #001F3F; border-color: #001F3F")
+                 # actionButton('LoadPos', 'Load Positions', style="color: #fff; background-color: #001F3F; border-color: #001F3F")),
+             ),
+             box(width = 12,dataTableOutput('table'),title = a('Table', style = 'color:#001F3F; vspace:1;'),background = "gray", collapsible = TRUE)
+             
+             
+)),
+tabPanel("Graphics",#Вторая вкладка
+         tags$style(HTML(".navbar {background-color:#001F3F;}
+                          .navbar-nav li a:hover, .navbar-nav > .active > a {
+                          color: #001F3F !important;
+                          background-color:#FDC600 !important;}
+                         ")),
+         fluidRow(
+           dashboardSidebar(
+             #inputId = "sidebarState",
+             imageOutput("logo", height = "70px"),
+             sidebarMenu(
+               
+               id = "sidebar",
+               menuItem('Common settings', visual_layout_common),
+               menuItem('Correlation graphic', visual_layout_corr),
+               menuItem('Model graphic', visual_layout_model),
+               tags$style(HTML(".sidebar {background-color:#001F3F;}
+                                .active a {color:white;}
+                                .btn-file {
+                                color: #001F3F;
+                                background-color:#FDC600; 
+                                border-color: #001F3F; }"))
+               # tags$style(HTML(".sidebar {background-color:#001F3F;}
+               #                  a:hover {color:red;}
+               #                  a:link {color:purple;}
+               #                  a {color:white;}"))
+             # 1 - боковая панель, 2 - при наведении цвет, 3 - когда нажимал уже цвеь, 4 - в неактивном режиме цвет
+          
+
+             ), # sidebarMenu
+           width = 300),
+           dashboardBody(
+             box(width = 12,title = a('Инструкция', style = 'color:#000; vspace:1;'),  background = 'gray',collapsible = TRUE,
+                 box(width = 6,title = a('Графики и их настройки', style = 'color:#000; vspace:1;'),  background = 'gray',collapsible = TRUE,
+                     htmlOutput("inst3")),
+                 box(width = 6,title = a('Загрузка данных и отправка отчетов', style = 'color:#000; vspace:1;'),  background = 'gray',collapsible = TRUE,
+                     htmlOutput("inst4")),collapsed = TRUE
+             ),
+           box(width = 6, background = "navy", title = "Graph Correlation 1", collapsible = TRUE,
+               # imageOutput("logo", height = "70px"),
+               plotlyOutput('cor_pot1') %>% withSpinner(type = getOption("spinner.type", default = 6),color = "#FDC600")
+
+           ),
+           box(width = 6, background = "navy",title = "Graph Correlation 2",collapsible = TRUE,
+               # imageOutput("logo", height = "70px"),
+               plotlyOutput('cor_pot2') %>% withSpinner(type = getOption("spinner.type", default = 6),color = "#FDC600")
+               
+           ),
+           box(width = 6, background = "navy",title = "Model",collapsible = TRUE,
+               # imageOutput("logo", height = "70px"),
+               plotlyOutput('model_graph1') %>% withSpinner(type = getOption("spinner.type", default = 6),color = "#FDC600")
+
+           ),
+           box(width = 6, background = "navy",title = "Hist model",collapsible = TRUE,
+               # imageOutput("logo", height = "70px"),
+               plotlyOutput('model_graph2')%>% withSpinner(type = getOption("spinner.type", default = 6),color = "#FDC600")
+
+           )
+           # tags$head(tags$style(HTML('
+           # 
+           #                /* other links in the sidebarmenu */
+           #                .skin-blue .main-sidebar .sidebar .sidebar-menu a{
+           #                background-color: rgb(255,125,125);
+           #                color: rgb(255,255,255);font-weight: bold;
+           #                }
+           #                 ')))
+         
+         ), 
+         # use_theme(create_theme(bs4dash_sidebar_light(
+         #   bg = "#D7DF01",
+         #   color = "#FF0000",
+         #   active_color = "#00FF00",
+         #   submenu_bg = "#00FFFF"
+         # )
+         # ))
+         controlbar = dashboardControlbar()
+         )
+         
+         
+         
+)))

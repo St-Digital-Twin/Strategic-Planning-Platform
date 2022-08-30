@@ -1,0 +1,26 @@
+{
+    "id": "02B554DA",
+    "path": "C:/Users/daryushka/YandexDisk/121.EurochemP/3.Shiny/121.EurochemP/server.R",
+    "project_path": "3.Shiny/121.EurochemP/server.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1661782245878.0,
+    "source_on_save": false,
+    "relative_order": 4,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "686,0",
+        "scrollLine": "0"
+    },
+    "folds": "2|56|12|4|\n13|56|22|4|\n23|56|31|4|\n32|56|38|4|\n39|56|42|4|\n43|56|55|0|\n56|56|66|8|\n67|56|120|8|\n121|56|130|4|\n131|56|155|6|\n156|56|175|19|\n176|56|180|6|\n181|56|228|8|\n229|56|241|4|\n242|56|256|4|\n257|56|315|4|\n316|56|374|4|\n375|56|436|4|\n437|56|498|4|\n499|56|516|0|\n517|56|547|4|\n548|56|611|6|\n612|56|673|6|\n674|56|684|6|\n",
+    "lastKnownWriteTime": 1661864318,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1661864318606,
+    "read_only": false,
+    "read_only_alternatives": []
+}

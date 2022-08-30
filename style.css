@@ -1,0 +1,29 @@
+/* Whole document: */
+html
+{
+   font-family: Panton;
+}
+body{
+  font-family: Panton;
+  font-size: 10;
+}
+/* Headers */
+h1,h2,h3,h4,h5,h6{
+  font-family: Panton;
+  font-size: 12;
+}
+
+p{
+    font-family: Panton;
+    font-size: 10;
+}
+
+ul{
+    font-family: Panton;
+    font-size: 10;
+}
+
+ol{
+    font-family: Panton;
+    font-size: 10;
+}
