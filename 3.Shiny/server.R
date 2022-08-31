@@ -1,3 +1,6 @@
+# Функция с сервером Shiny, поддерживающего взаимодействие приложение с пользовательскими действиями
+# Разработчик ООО "Цифровой Двойник"
+# Версия 29.07.2022
 
 server <- function(input, output,  session) {
 # 1. Инструкция пользователя 1                          ####  
@@ -43,7 +46,7 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
     
 # 6. Логотип                                            ####
     output$logo <- renderImage({
-      list(src = '8.Pic/15.png',
+      list(src = '6.Pic/15.png',
            # contentType = 'image/png',
            width = 150,
            vspace = 20,
@@ -277,7 +280,7 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
           p %>%
             layout(
               images = list(
-                source = base64enc::dataURI(file = '8.Pic/15.png'),
+                source = base64enc::dataURI(file = '6.Pic/15.png'),
                 x = 0.82, y = 1.05 ,
                 sizex = 0.18, sizey = 0.1,
                 xref = "paper", yref = "paper",
@@ -302,7 +305,7 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
         p %>%
           layout(
             images = list(
-              source = base64enc::dataURI(file = '8.Pic/15.png'),
+              source = base64enc::dataURI(file = '6.Pic/15.png'),
               x = 0.82, y = 1.05 ,
               sizex = 0.18, sizey = 0.1,
               xref = "paper", yref = "paper",
@@ -336,7 +339,7 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
           p %>%
             layout(
               images = list(
-                source = base64enc::dataURI(file = '8.Pic/15.png'),
+                source = base64enc::dataURI(file = '6.Pic/15.png'),
                 x = 0.82, y = 1.05 ,
                 sizex = 0.18, sizey = 0.1,
                 xref = "paper", yref = "paper",
@@ -361,7 +364,7 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
         p %>%
           layout(
             images = list(
-              source = base64enc::dataURI(file = '8.Pic/15.png'),
+              source = base64enc::dataURI(file = '6.Pic/15.png'),
               x = 0.82, y = 1.05 ,
               sizex = 0.18, sizey = 0.1,
               xref = "paper", yref = "paper",
@@ -397,7 +400,7 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
           p$curve %>%
             layout(
               images = list(
-                source = base64enc::dataURI(file = '8.Pic/15.png'),
+                source = base64enc::dataURI(file = '6.Pic/15.png'),
                 x = 0.82, y = 1.05 ,
                 sizex = 0.18, sizey = 0.1,
                 xref = "paper", yref = "paper",
@@ -424,7 +427,7 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
         p$curve %>%
           layout(
             images = list(
-              source = base64enc::dataURI(file = '8.Pic/15.png'),
+              source = base64enc::dataURI(file = '6.Pic/15.png'),
               x = 0.82, y = 1.05 ,
               sizex = 0.18, sizey = 0.1,
               xref = "paper", yref = "paper",
@@ -457,7 +460,7 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
           p$graph_cols %>%
             layout(
               images = list(
-                source = base64enc::dataURI(file = '8.Pic/15.png'),
+                source = base64enc::dataURI(file = '6.Pic/15.png'),
                 x = 0.82, y = 1.05 ,
                 sizex = 0.18, sizey = 0.1,
                 xref = "paper", yref = "paper",
@@ -484,7 +487,7 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
         p$graph_cols %>%
           layout(
             images = list(
-              source = base64enc::dataURI(file = '8.Pic/15.png'),
+              source = base64enc::dataURI(file = '6.Pic/15.png'),
               x = 0.82, y = 1.05 ,
               sizex = 0.18, sizey = 0.1,
               xref = "paper", yref = "paper",
@@ -571,7 +574,7 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
             p %>%
               layout(
                 images = list(
-                  source = base64enc::dataURI(file = '8.Pic/15.png'),
+                  source = base64enc::dataURI(file = '6.Pic/15.png'),
                   x = 0.82, y = 1.05 ,
                   sizex = 0.18, sizey = 0.1,
                   xref = "paper", yref = "paper",
@@ -598,7 +601,7 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
           p %>%
             layout(
               images = list(
-                source = base64enc::dataURI(file = '8.Pic/15.png'),
+                source = base64enc::dataURI(file = '6.Pic/15.png'),
                 x = 0.82, y = 1.05 ,
                 sizex = 0.18, sizey = 0.1,
                 xref = "paper", yref = "paper",
@@ -634,7 +637,7 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
             p %>%
               layout(
                 images = list(
-                  source = base64enc::dataURI(file = '8.Pic/15.png'),
+                  source = base64enc::dataURI(file = '6.Pic/15.png'),
                   x = 0.82, y = 1.05 ,
                   sizex = 0.18, sizey = 0.1,
                   xref = "paper", yref = "paper",
@@ -661,7 +664,7 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
           p %>%
             layout(
               images = list(
-                source = base64enc::dataURI(file = '8.Pic/15.png'),
+                source = base64enc::dataURI(file = '6.Pic/15.png'),
                 x = 0.82, y = 1.05 ,
                 sizex = 0.18, sizey = 0.1,
                 xref = "paper", yref = "paper",
@@ -674,7 +677,7 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
       
 # 24. Функциональная архитектура                        ####
       output$func_architect <- renderImage({
-        list(src = '8.Pic/func.architect.png',
+        list(src = '6.Pic/func.architect.png',
              # contentType = 'image/png',
              width  = session$clientData$output_func_architect_width,
              height = session$clientData$output_func_architect_height,
