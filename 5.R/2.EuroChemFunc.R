@@ -18,7 +18,6 @@ downloadQuotes <- function(excel = TRUE, data = NULL ){
   return(quotes)
 }
 
-
 # 2. Прогнозирование биржевых котировок (сценарных условий) ####
 quotesForecast <- function(data                = tar_read(download_files),
                            GDP_before_end_year = -2, # Использую для зактрытия данных за 2020 год

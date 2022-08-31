@@ -1,6 +1,7 @@
-# Необходимые библиотеки
+# Установка библиотек необходимых для программного проекта
 
 `%!in%` <- Negate(`%in%`)
+
 libs <- c("targets", "tarchetypes", "htmlTable",
            "readxl","dplyr","shiny", "bs4Dash","shinydashboard","shinythemes", "sysfonts",
           "shinydashboardPlus","shinyWidgets", 
