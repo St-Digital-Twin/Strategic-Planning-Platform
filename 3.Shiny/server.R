@@ -144,8 +144,8 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
                 inline = TRUE,
                 smtp = list(host.name = "smtp.gmail.com",
                             port = 465,
-                            user.name = "nikbrown35@gmail.com",
-                            passwd = "jkadakucyyuyjehl",
+                            user.name = "dtwin496@gmail.com",
+                            passwd = "cfdocpmuldwewwhq",
                             ssl = TRUE),
                 authenticate = TRUE,
                 encoding = "utf-8")
