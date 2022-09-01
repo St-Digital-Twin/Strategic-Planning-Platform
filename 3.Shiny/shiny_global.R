@@ -71,9 +71,9 @@ visual_layout_graphic <- list(
 
 
 # 5. Загрузка                         ####
-source('3.Shiny/121.EurochemP/visnetwork_fun.R', encoding = 'UTF-8')
-source('3.Shiny/121.EurochemP/server.R',         encoding = 'UTF-8')
-source('3.Shiny/121.EurochemP/ui.R',             encoding = 'UTF-8')
+source('3.Shiny/visnetwork_fun.R', encoding = 'UTF-8')
+source('3.Shiny/server.R',         encoding = 'UTF-8')
+source('3.Shiny/ui.R',             encoding = 'UTF-8')
 
 # 6. Shiny                            ####
 shinyApp(ui, server)
