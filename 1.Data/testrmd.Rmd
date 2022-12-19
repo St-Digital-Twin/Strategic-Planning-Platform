@@ -1,8 +1,8 @@
 ---
 output:
-  pdf_document: default
-  word_document: default
   html_document: default
+  word_document: default
+  pdf_document: default
 ---
 ## 1.1.	Methanol price analysis
 
@@ -27,6 +27,8 @@ library(targets)
 library(tidyverse)
 library(htmlTable)
 library(knitr)
+# library(this.path)
+# source(str_replace(this.path(), '1.Data/testrmd.Rmd', '5.R/2.EuroChemFunc.R'), encoding = 'UTF-8')
 # График корреляций
 graphCor <- function(data     = tar_read(model_data)$model_data, # если xlsx, то "1.Data/model_data.xlsx"
                      y_gr     = 'euro',
@@ -230,32 +232,32 @@ p <- graphCor(data = "tempdata2.xlsx", targets = FALSE,
               x_gr = settings_grah$x_gr, 
               y_gr = settings_grah$y_gr, 
               str_year = settings_grah$str_year, 
-              end_year = settings_grah$end_year) %>%
-        layout(
-          images = list(
-            source = base64enc::dataURI(file = '15.png'),
-            x = 0.82, y = 1.05 ,
-            sizex = 0.18, sizey = 0.1,
-            xref = "paper", yref = "paper",
-            xanchor = "left", yanchor = "bottom"
-          ),
-          margin = list(t = 50)
-        )
+              end_year = settings_grah$end_year)
+        # layout(
+        #   images = list(
+        #     source = base64enc::dataURI(file = '6.Pic/15.png'),
+        #     x = 0.82, y = 1.05 ,
+        #     sizex = 0.18, sizey = 0.1,
+        #     xref = "paper", yref = "paper",
+        #     xanchor = "left", yanchor = "bottom"
+        #   ),
+        #   margin = list(t = 50)
+        # )
 p1 <- graphCor(data = "tempdata2.xlsx", targets = FALSE, 
               x_gr = settings_grah$x_gr2, 
               y_gr = settings_grah$y_gr2, 
               str_year = settings_grah$str_year2, 
-              end_year = settings_grah$end_year2) %>%
-        layout(
-          images = list(
-            source = base64enc::dataURI(file = '15.png'),
-            x = 0.82, y = 1.05 ,
-            sizex = 0.18, sizey = 0.1,
-            xref = "paper", yref = "paper",
-            xanchor = "left", yanchor = "bottom"
-          ),
-          margin = list(t = 50)
-        )
+              end_year = settings_grah$end_year2)
+        # layout(
+        #   images = list(
+        #     source = base64enc::dataURI(file = '6.Pic/15.png'),
+        #     x = 0.82, y = 1.05 ,
+        #     sizex = 0.18, sizey = 0.1,
+        #     xref = "paper", yref = "paper",
+        #     xanchor = "left", yanchor = "bottom"
+        #   ),
+        #   margin = list(t = 50)
+        # )
 p
 p1
 
@@ -266,30 +268,30 @@ Using these correlations, we created combined methanol price model depending on 
 ```{r cars2,echo=FALSE, message=FALSE, warning=FALSE, fig.show="hold", out.width="50%",fig.ncol = 2}
 p <- modelGraph(data = "tempdata2.xlsx", targets = FALSE,
                 str_year = settings_grah$model_year, 
-                end_year = settings_grah$model_end_year)$curve %>%
-        layout(
-          images = list(
-            source = base64enc::dataURI(file = '15.png'),
-            x = 0.82, y = 1.05 ,
-            sizex = 0.18, sizey = 0.1,
-            xref = "paper", yref = "paper",
-            xanchor = "left", yanchor = "bottom"
-          ),
-          margin = list(t = 50)
-        )
+                end_year = settings_grah$model_end_year)$curve
+        # layout(
+        #   images = list(
+        #     source = base64enc::dataURI(file = '6.Pic/15.png'),
+        #     x = 0.82, y = 1.05 ,
+        #     sizex = 0.18, sizey = 0.1,
+        #     xref = "paper", yref = "paper",
+        #     xanchor = "left", yanchor = "bottom"
+        #   ),
+        #   margin = list(t = 50)
+        # )
 p1 <- modelGraph(data ="tempdata2.xlsx", targets = FALSE,
                 str_year = settings_grah$model_year, 
-                end_year = settings_grah$model_end_year)$graph_cols %>%
-        layout(
-          images = list(
-            source = base64enc::dataURI(file = '15.png'),
-            x = 0.82, y = 1.05 ,
-            sizex = 0.18, sizey = 0.1,
-            xref = "paper", yref = "paper",
-            xanchor = "left", yanchor = "bottom"
-          ),
-          margin = list(t = 50)
-        )
+                end_year = settings_grah$model_end_year)$graph_cols 
+        # layout(
+        #   images = list(
+        #     source = base64enc::dataURI(file = '6.Pic/15.png'),
+        #     x = 0.82, y = 1.05 ,
+        #     sizex = 0.18, sizey = 0.1,
+        #     xref = "paper", yref = "paper",
+        #     xanchor = "left", yanchor = "bottom"
+        #   ),
+        #   margin = list(t = 50)
+        # )
 p
 p1
 ```
