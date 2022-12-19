@@ -1,12 +1,11 @@
-# Установка библиотек необходимых для программного проекта
+# Необходимые библиотеки
 
 `%!in%` <- Negate(`%in%`)
-
 libs <- c("targets", "tarchetypes", "htmlTable",
            "readxl","dplyr","shiny", "bs4Dash","shinydashboard","shinythemes", "sysfonts",
           "shinydashboardPlus","shinyWidgets", 
           "devtools", "openxlsx", "tidyverse", "tibble", "devtools", "data.table", "visNetwork",
-          "plotly", "ggplot2", 'knitr', 'mailR', 'bookdown',"shinycssloaders","rhandsontable","GGally")
+          "plotly", "ggplot2", 'knitr', 'mailR', 'bookdown',"shinycssloaders","rhandsontable","GGally","markdown","rmarkdown")
 
 # Обновление библиотек из гитхаба при наличии
 update_github_pkgs <- function() {

@@ -21,11 +21,25 @@ In addition, the analysis of the impact of the growth rate of world GDP on the p
 An analysis of the directions of the relationship between the variables shows that the most correct models are obtained when using data from 2012.
 
 
-<img src="figure/cars-1.png" alt="plot of chunk cars" width="50%" /><img src="figure/cars-2.png" alt="plot of chunk cars" width="50%" />
+
+```
+## Error in path.expand(path): invalid 'path' argument
+```
+
+```
+## Error in path.expand(path): invalid 'path' argument
+```
 
 Using these correlations, we created combined methanol price model depending on oil prices, coal prices and the euro / dollar exchange rate:
 
-<img src="figure/cars2-1.png" alt="plot of chunk cars2" width="50%" /><img src="figure/cars2-2.png" alt="plot of chunk cars2" width="50%" />
+
+```
+## Error in path.expand(path): invalid 'path' argument
+```
+
+```
+## Error in path.expand(path): invalid 'path' argument
+```
 -	For almost 9 years since 2012, there have been two periods of price increases and two periods of price decreases. All these movements can be explained using a three-factor model. At the same time, model estimates are smoother, and real data are more volatile.
 -	In the process of modeling, the possibility of delayed influence of factors was taken into account. The analysis showed that the best quality model is obtained using gas prices with a lag of one month.
 -	The final equation of the methanol price model:

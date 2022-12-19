@@ -1,7 +1,3 @@
-# Функции с дополнительными настройками пользовательского интерфейса
-# Разработчик ООО "Цифровой Двойник"
-# Версия 29.07.2022
-
 # 1. Место хранения файлов            ####
 path <- "1.Data/view_in_shiny_like_files"
 vec_of_files <- list.files(path = path)
@@ -62,7 +58,7 @@ visual_layout_model <- list(
 visual_layout_graphic <- list(
   menuItem('Correlation graphic', visual_layout_corr),
   menuItem('Model graphic', visual_layout_model),
-  textInput("email_pol", "Write email for reporting", "n.burakov@dtwin.ru"),
+  textInput("email_pol", "Write email for reporting", "info@dtwin.ru"),
   actionButton("send_email", "Send Report", style="color: #001F3F; background-color: #FDC600; border-color: #FDC600")
 )
 

@@ -27,8 +27,78 @@ library(targets)
 library(tidyverse)
 library(htmlTable)
 library(knitr)
-# library(this.path)
-# source(str_replace(this.path(), '1.Data/testrmd.Rmd', '5.R/2.EuroChemFunc.R'), encoding = 'UTF-8')
+library(data.table)
+library(openxlsx)
+library(plotly)
+modelCreation <- function(data   = tar_read(quotes_forecast),
+                          bias   = 61.2277,
+                          w_oil  = 0.624111,
+                          w_coal = 0.62876,
+                          w_gas  = 27.31724){
+  # Проверил lm и их lm, отличаются
+  # fit <- lm(methanol ~ oil + coal + gas, data = na.omit(data, cols = 'Methanol, spot FOB RDAM T2, $'))
+  # summary(fit)
+  
+  # Построенная модель по месяцам
+  model_data <- data[, model := bias + w_oil*oil+ w_coal*coal + w_gas*gas] %>%
+    .[, `:=`(err = abs(model/methanol - 1))]
+  
+  # Построенная модель по годам. Они считают среднюю за год, хотя надо брать последнюю
+  model_data_year <- copy(model_data)[, lapply(.SD, mean), .SDcols = c('model', 'methanol'), by = year] %>%
+    .[, err := abs(model/methanol - 1)]
+  
+  return(list(model_data      = model_data,
+              model_data_year = model_data_year))
+}
+quotesForecast <- function(data                = tar_read(download_files),
+                           GDP_before_end_year = -2, # Использую для зактрытия данных за 2020 год
+                           GDP_forecast        = 2,
+                           xyinya = NULL
+                           ){
+  
+# Прогнозные константы для котировок
+ pred_data_const <- data.table(year = 2021:2035, 
+                               oil  = 45, 
+                               euro = c(1.20, 1.22, 1.24, 1.24, 1.24, 1.24, 1.24, 1.24, 1.24, 1.24, 1.24, 1.24, 1.24, 1.24, 1.24), 
+                               coal = c(63.69, 69.6080065625, 74.27375, 75.6, 75.6, 75.6, 75.6, 75.6, 75.6, 75.6, 75.6, 75.6, 75.6, 75.6, 75.6), 
+                               gas  = c(3.66448886194379, 4.88572420088728, 5.05664274751648, 5.29190037015231, 4.22940806641501, 4.32245504387614, 4.41754905484142, 4.51473513404793, 4.61405930699698, 4.71556861175092, 4.81931112120944, 4.92533596587605, 5.03369335712532, 5.14443461098208, 5.25761217242368)) %>% 
+   .[year >= 2025, oil := oil * cumprod(rep(1.022, length(oil)))]
+ 
+ # Достраивание данных с октября 2020 до 2021. и изменение GDP. При скачивании котировок, этот костыль можно будет убрать
+ data <- data[.(2020, 9), gdp := -3, on = c('year', 'month')]
+ 
+ if(last(data$month) < 12){
+   data1 <- data.table(year = last(data$year),
+              month = (last(data$month) + 1):12, 
+              oil = last(data$oil),
+              euro = last(data$euro),
+              coal = last(data$coal),
+              gdp = GDP_before_end_year,
+              gas = last(data$gas),
+              methanol = NA)
+ } else {
+   data1 <- data[, lapply(.SD, function(x) x = NA)] %>% na.omit()
+ }
+ # Прогнозы
+ data_forc <- data.table(year = rep((last(data$year) + 1):2035, each = 12), 
+                         month = rep(1:12, length((last(data$year) + 1):2035)),
+                         gdp = 0,
+                         methanol = NA)
+ if(last(data$year) == 2020){
+   data_forc <- data_forc %>% 
+     .[(year == 2021) & (month >= 10), gdp := GDP_forecast] %>% 
+     .[year > 2021, gdp := GDP_forecast]
+ } else {
+   data_forc <- data_forc[year > last(data$year), gdp := GDP_forecast]
+ }
+ 
+ data_forc <- merge(data_forc, pred_data_const, by = 'year', all.x = TRUE)
+ 
+ # Объединение
+ data_new <- rbindlist(list(data, data1, data_forc), use.names=TRUE)[, gdp_less_1 := ifelse(gdp < 1, gdp, 0)]
+ 
+return(data_new)
+}
 # График корреляций
 graphCor <- function(data     = tar_read(model_data)$model_data, # если xlsx, то "1.Data/model_data.xlsx"
                      y_gr     = 'euro',
@@ -39,7 +109,7 @@ graphCor <- function(data     = tar_read(model_data)$model_data, # если xlsx
 ){
   
   if(!targets){
-    data <- read.xlsx(xlsxFile = data) %>% as.data.table() 
+    data <- openxlsx::read.xlsx(xlsxFile = data) %>% as.data.table() 
     # setnames(old = names(.), new = c('year', 'month', 'oil', 'euro', 'coal', 'gdp', 'gas', 'methanol'))
   }
   
@@ -103,7 +173,7 @@ modelGraph <- function(data = tar_read(model_data)$model_data, # '1.Data/model_d
 ){
   
   if(!targets){
-    data <- read.xlsx(xlsxFile = data) %>% as.data.table()
+    data <- openxlsx::read.xlsx(xlsxFile = data) %>% as.data.table()
   }
   
   # Подготовка данных для кривых
@@ -222,9 +292,10 @@ modelGraph <- function(data = tar_read(model_data)$model_data, # '1.Data/model_d
   return(list(curve      = curve,
               graph_cols = graph_cols))
 }
-path <- "view_in_shiny_like_files"
+
+path1 <- "view_in_shiny_like_files"
 settings_grah <- read_delim("Rmddata.csv") %>% select(-1)
-quotesForecast <- quotesForecast(read.xlsx(paste0(path,"/",settings_grah$file)) %>% as.data.table())
+quotesForecast <- quotesForecast(openxlsx::read.xlsx(paste0(path1,"/",settings_grah$file)) %>% as.data.table())
 modelCreation <- modelCreation(quotesForecast)$model_data
 write.xlsx(modelCreation, "tempdata2.xlsx")
         
@@ -232,32 +303,32 @@ p <- graphCor(data = "tempdata2.xlsx", targets = FALSE,
               x_gr = settings_grah$x_gr, 
               y_gr = settings_grah$y_gr, 
               str_year = settings_grah$str_year, 
-              end_year = settings_grah$end_year)
-        # layout(
-        #   images = list(
-        #     source = base64enc::dataURI(file = '6.Pic/15.png'),
-        #     x = 0.82, y = 1.05 ,
-        #     sizex = 0.18, sizey = 0.1,
-        #     xref = "paper", yref = "paper",
-        #     xanchor = "left", yanchor = "bottom"
-        #   ),
-        #   margin = list(t = 50)
-        # )
+              end_year = settings_grah$end_year) %>%
+        layout(
+          images = list(
+            source = base64enc::dataURI(file = '15.png'),
+            x = 0.82, y = 1.05 ,
+            sizex = 0.18, sizey = 0.1,
+            xref = "paper", yref = "paper",
+            xanchor = "left", yanchor = "bottom"
+          ),
+          margin = list(t = 50)
+        )
 p1 <- graphCor(data = "tempdata2.xlsx", targets = FALSE, 
               x_gr = settings_grah$x_gr2, 
               y_gr = settings_grah$y_gr2, 
               str_year = settings_grah$str_year2, 
-              end_year = settings_grah$end_year2)
-        # layout(
-        #   images = list(
-        #     source = base64enc::dataURI(file = '6.Pic/15.png'),
-        #     x = 0.82, y = 1.05 ,
-        #     sizex = 0.18, sizey = 0.1,
-        #     xref = "paper", yref = "paper",
-        #     xanchor = "left", yanchor = "bottom"
-        #   ),
-        #   margin = list(t = 50)
-        # )
+              end_year = settings_grah$end_year2) %>%
+        layout(
+          images = list(
+            source = base64enc::dataURI(file = '15.png'),
+            x = 0.82, y = 1.05 ,
+            sizex = 0.18, sizey = 0.1,
+            xref = "paper", yref = "paper",
+            xanchor = "left", yanchor = "bottom"
+          ),
+          margin = list(t = 50)
+        )
 p
 p1
 
@@ -268,30 +339,30 @@ Using these correlations, we created combined methanol price model depending on 
 ```{r cars2,echo=FALSE, message=FALSE, warning=FALSE, fig.show="hold", out.width="50%",fig.ncol = 2}
 p <- modelGraph(data = "tempdata2.xlsx", targets = FALSE,
                 str_year = settings_grah$model_year, 
-                end_year = settings_grah$model_end_year)$curve
-        # layout(
-        #   images = list(
-        #     source = base64enc::dataURI(file = '6.Pic/15.png'),
-        #     x = 0.82, y = 1.05 ,
-        #     sizex = 0.18, sizey = 0.1,
-        #     xref = "paper", yref = "paper",
-        #     xanchor = "left", yanchor = "bottom"
-        #   ),
-        #   margin = list(t = 50)
-        # )
+                end_year = settings_grah$model_end_year)$curve %>%
+        layout(
+          images = list(
+            source = base64enc::dataURI(file = '15.png'),
+            x = 0.82, y = 1.05 ,
+            sizex = 0.18, sizey = 0.1,
+            xref = "paper", yref = "paper",
+            xanchor = "left", yanchor = "bottom"
+          ),
+          margin = list(t = 50)
+        )
 p1 <- modelGraph(data ="tempdata2.xlsx", targets = FALSE,
                 str_year = settings_grah$model_year, 
-                end_year = settings_grah$model_end_year)$graph_cols 
-        # layout(
-        #   images = list(
-        #     source = base64enc::dataURI(file = '6.Pic/15.png'),
-        #     x = 0.82, y = 1.05 ,
-        #     sizex = 0.18, sizey = 0.1,
-        #     xref = "paper", yref = "paper",
-        #     xanchor = "left", yanchor = "bottom"
-        #   ),
-        #   margin = list(t = 50)
-        # )
+                end_year = settings_grah$model_end_year)$graph_cols %>%
+        layout(
+          images = list(
+            source = base64enc::dataURI(file = '15.png'),
+            x = 0.82, y = 1.05 ,
+            sizex = 0.18, sizey = 0.1,
+            xref = "paper", yref = "paper",
+            xanchor = "left", yanchor = "bottom"
+          ),
+          margin = list(t = 50)
+        )
 p
 p1
 ```
@@ -308,7 +379,7 @@ Methanol price (`$`) = 61.2 + 0.624 * Brent price (`$`) + 27.32 * Gas price (`$`
 Using the model described above we ran predictive simulation of methanol prices in 3 distinct oil scenarios.
 
 ```{r pressure, echo=FALSE}
-htmlTable(read_xlsx("tempdata2.xlsx") %>% filter(month == 12) %>% select(-month),rnames=FALSE, align="lllllllllll", align.header="lllllllllll",
+htmlTable(read.xlsx("tempdata2.xlsx") %>% filter(month == 12) %>% select(-month),rnames=FALSE, align="lllllllllll", align.header="lllllllllll",
           css.header = c(rep("padding-left: 1em; font-family: Panton", 11)),
           css.cell   = c(rep("padding-left: 1em; font-family: Panton", 11)))
 

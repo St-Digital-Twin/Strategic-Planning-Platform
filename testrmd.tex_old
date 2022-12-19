@@ -1,0 +1,577 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same} % disable monospaced font for URLs
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\author{}
+\date{\vspace{-2.5em}}
+
+\begin{document}
+
+\hypertarget{methanol-price-analysis}{%
+\subsection{1.1. Methanol price
+analysis}\label{methanol-price-analysis}}
+
+To assess methanol price dependence, we have run correlation analysis
+between methanol prices and main factors: oil prices, coal prices and
+euro exchange rate
+
+From a wide range of factors that are used in the company forecasting
+system, it is possible to select three that have the highest correlation
+with the price of methanol.
+
+\begin{itemize}
+\item
+  The first is the price of gas, with a correlation of 0.906. The factor
+  demonstrates a strong relationship with the price of methanol and is
+  present in all models, regardless of the estimation interval.
+\item
+  The second factor is the price of oil, with a correlation of 0.805.
+  The factor also demonstrates a strong relationship with the price of
+  methanol and is present in all models, regardless of the estimation
+  interval.
+\item
+  The third factor is the price of Australian coal, which correlates
+  with 0.516. The factor begins to significantly influence after the
+  2008-2009 crisis.
+\end{itemize}
+
+In addition, the analysis of the impact of the growth rate of world GDP
+on the price of methanol was carried out. The chart below shows that
+significant downward pressure on prices occurs during periods of low and
+negative GDP growth. The main example of such a period is Q2 and Q3 2020
+amid restrictions due to the coronavirus pandemic. It is not possible to
+find a stable connection for periods of more calm growth in the analysed
+interval.
+
+An analysis of the directions of the relationship between the variables
+shows that the most correct models are obtained when using data from
+2012.
+
+\begin{verbatim}
+## # A tibble: 1 × 11
+##   file                          x_gr  y_gr  str_year end_year x_gr2 y_gr2 str_year2 end_year2 model_year model_end_year
+##   <chr>                         <chr> <chr>    <dbl>    <dbl> <chr> <chr>     <dbl>     <dbl>      <dbl>          <dbl>
+## 1 quotes_agregation_level1.xlsx oil   euro      2012     2020 oil   euro       2012      2020       2012           2020
+\end{verbatim}
+
+Using these correlations, we created combined methanol price model
+depending on oil prices, coal prices and the euro / dollar exchange
+rate:
+
+- For almost 9 years since 2012, there have been two periods of price
+increases and two periods of price decreases. All these movements can be
+explained using a three-factor model. At the same time, model estimates
+are smoother, and real data are more volatile. - In the process of
+modeling, the possibility of delayed influence of factors was taken into
+account. The analysis showed that the best quality model is obtained
+using gas prices with a lag of one month. - The final equation of the
+methanol price model: Methanol price (\texttt{\$}) = 61.2 + 0.624 *
+Brent price (\texttt{\$}) + 27.32 * Gas price (\texttt{\$}) + 0.628 *
+Coal price (\texttt{\$}) - The R-square index of the model is 0.830. -
+The model does not use the autoregressive component, since the analysis
+showed that when using it, forecasts for 1-3 months are improved, but
+the accuracy of forecasts for periods of more than 3 months decreases
+due to the underestimated influence of other factors.
+
+\hypertarget{methanol-forecast}{%
+\subsection{Methanol forecast}\label{methanol-forecast}}
+
+Using the model described above we ran predictive simulation of methanol
+prices in 3 distinct oil scenarios.
+
+year
+
+oil
+
+euro
+
+coal
+
+gdp
+
+gas
+
+methanol
+
+gdp\_less\_1
+
+model
+
+err
+
+2012
+
+109.6765
+
+1.3110953849636
+
+92.88
+
+1.13330889604595
+
+10.5625
+
+431.716616666667
+
+0
+
+476.6155863915
+
+0.10400102287353
+
+2013
+
+110.674
+
+1.36951377232217
+
+84.3375
+
+2.51986222635993
+
+11.2866666666667
+
+537.705316666667
+
+0
+
+491.649189447334
+
+0.0856530999262626
+
+2014
+
+62.33
+
+1.23279999081493
+
+62.44
+
+3.09612278152956
+
+8.3625
+
+375.1706875
+
+0
+
+367.82873253
+
+0.0195696391392517
+
+2015
+
+37.72
+
+1.08697826086957
+
+52.1275
+
+3.00522023514886
+
+5.25
+
+236.62155
+
+0
+
+260.96036382
+
+0.102859666923828
+
+2016
+
+54.07
+
+1.05502608695652
+
+86.32
+
+2.99636346938427
+
+5.3625
+
+316.81850625
+
+0
+
+295.73664447
+
+0.066542393717886
+
+2017
+
+64.21
+
+1.18380909090909
+
+102.155
+
+3.36208676787324
+
+7.46333333333333
+
+367.56368125
+
+0
+
+369.410512976667
+
+0.00502452179275692
+
+2018
+
+56.46
+
+1.13835909090909
+
+101.37
+
+2.6737969
+
+8.01666666666667
+
+326.58625
+
+0
+
+379.195615593333
+
+0.161088734119496
+
+2019
+
+65.85
+
+1.11061428571429
+
+66.18
+
+2.4566793
+
+4.86
+
+224.708083333333
+
+0
+
+276.69853255
+
+0.231368842835725
+
+2020
+
+41.09
+
+1.18105652173913
+
+54.6
+
+-2
+
+3.74333333333333
+
+-2
+
+223.460252056667
+
+2021
+
+45
+
+1.2
+
+63.69
+
+2
+
+3.66448886194379
+
+0
+
+229.462141119045
+
+2022
+
+45
+
+1.22
+
+69.6080065625
+
+2
+
+4.88572420088728
+
+0
+
+266.543925775684
+
+2023
+
+45
+
+1.24
+
+74.27375
+
+2
+
+5.05664274751648
+
+0
+
+274.146581578167
+
+2024
+
+45
+
+1.24
+
+75.6
+
+2
+
+5.29190037015231
+
+0
+
+281.40706346754
+
+2025
+
+45.99
+
+1.24
+
+75.6
+
+2
+
+4.22940806641501
+
+0
+
+253.000576098195
+
+2026
+
+47.00178
+
+1.24
+
+75.6
+
+2
+
+4.32245504387614
+
+0
+
+256.173825740355
+
+2027
+
+48.03581916
+
+1.24
+
+75.6
+
+2
+
+4.41754905484142
+
+0
+
+259.416886874643
+
+2028
+
+49.09260718152
+
+1.24
+
+75.6
+
+2
+
+4.51473513404793
+
+0
+
+262.731295353885
+
+2029
+
+50.1726445395134
+
+1.24
+
+75.6
+
+2
+
+4.61405930699698
+
+0
+
+266.11862081967
+
+2030
+
+51.2764427193827
+
+1.24
+
+75.6
+
+2
+
+4.71556861175092
+
+0
+
+269.580467445703
+
+2031
+
+52.4045244592092
+
+1.24
+
+75.6
+
+2
+
+4.81931112120944
+
+0
+
+273.118474697509
+
+2032
+
+53.5574239973118
+
+1.24
+
+75.6
+
+2
+
+4.92533596587605
+
+0
+
+276.734318108854
+
+2033
+
+54.7356873252526
+
+1.24
+
+75.6
+
+2
+
+5.03369335712532
+
+0
+
+280.429710075249
+
+2034
+
+55.9398724464082
+
+1.24
+
+75.6
+
+2
+
+5.14443461098208
+
+0
+
+284.206400664904
+
+2035
+
+57.1705496402292
+
+1.24
+
+75.6
+
+2
+
+5.25761217242368
+
+0
+
+288.066178447532
+
+\end{document}
