@@ -1,6 +1,6 @@
 # Shiny - Приложение. Визуализация работы всего кода
 
-setwd('/mnt/seafiles.dtwin.ru/121.EurochemP')
+setwd('/mnt/seafiles.dtwin.ru/Strategic-Planning-Platform')
 
 source('5.R/2.EuroChemFunc.R', encoding = 'UTF-8')
 source('5.R/3.UIFunc.R', encoding = 'UTF-8')
