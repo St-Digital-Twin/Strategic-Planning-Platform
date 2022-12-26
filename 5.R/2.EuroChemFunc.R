@@ -311,7 +311,7 @@ marketDataGraph <- function(vec_indic = c('coal', 'gas', 'oil'),
                             data = tar_read(model_data)$model_data, # '1.Data/model_data.xlsx'
                             targets  = TRUE){
   if(!targets){
-    data <- read.xlsx(xlsxFile = data) %>% as.data.table()
+    data <- read.xlsx(xlsxFile = data,sep.names = " ") %>% as.data.table()
   }
   if(str_year < min(data$year)){
     str_year <- min(data$year)

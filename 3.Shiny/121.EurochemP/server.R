@@ -1,4 +1,4 @@
-setwd('/mnt/seafiles.dtwin.ru/121.EurochemP');
+setwd("/mnt/github/Strategic-Planning-Platform")
 server <- function(input, output,  session) {
 # 1. Инструкция пользователя 1                          ####  
   output$inst1 <- renderUI({
@@ -553,6 +553,17 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
           if(!is.null(input$nd_file)){
             quotesForecast <- quotesForecast(read.xlsx(paste0(path,"/",input$nd_file)) %>% as.data.table())
             modelCreation <- modelCreation(quotesForecast)$model_data
+            
+            VA_data <- qread("modelVA")
+            
+            new_data <- cbind(VA_data, modelCreation$model) %>% setnames("V2","Algorithm 1")
+            
+            modelCreation <- modelCreation %>% 
+              as.data.table() %>% 
+              .[,-c("model")] %>% 
+              cbind(new_data %>% .[,-c("fact","x")])
+            
+            
             write.xlsx(modelCreation, "1.Data/tempdata.xlsx")
             write.csv(tibble(file = input$nd_file, 
                              x_gr = input$X_1, 
@@ -565,7 +576,7 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
                              end_year2 = input$market_year[2],
                              model_year = input$market_year[1], 
                              model_end_year = input$market_year[2]),"1.Data/Rmddata.csv")
-            p <- marketDataGraph(data = "1.Data/tempdata.xlsx", targets = FALSE, str_year = input$market_year[1], end_year = input$market_year[2], vec_indic = input$proc_list1)
+            p <- marketDataGraph(data = "1.Data/tempdata.xlsx", targets = FALSE, str_year = input$market_year[1], end_year = input$market_year[2], vec_indic = c(input$proc_list1,input$alko))
             
             # p <- modelGraph(data = paste0(path,"/",input$nd_file), targets = FALSE)
             p %>%
@@ -592,7 +603,9 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
                            end_year2 = input$market_year[2],
                            model_year = input$market_year[1], 
                            model_end_year = input$market_year[2]),"1.Data/Rmddata.csv")
-          p <- marketDataGraph(str_year = input$market_year[1], end_year = input$market_year[2], vec_indic = input$proc_list1)
+          vec_indic2 <- input$proc_list1
+          vec_indic2[which(vec_indic2 == "Algorithm 1")] <- "model"
+          p <- marketDataGraph(str_year = input$market_year[1], end_year = input$market_year[2], vec_indic = vec_indic2)
           
           # p <- modelGraph(data = paste0(path,"/",input$nd_file), targets = FALSE)
           p %>%
@@ -615,8 +628,8 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
         if(input$from_where == "File"){
           if(!is.null(input$nd_file)){
             quotesForecast <- quotesForecast(read.xlsx(paste0(path,"/",input$nd_file)) %>% as.data.table())
-            modelCreation <- modelCreation(quotesForecast)$model_data
-            write.xlsx(modelCreation, "1.Data/tempdata.xlsx")
+            modelCreation <- modelCreation(quotesForecast)$model_data 
+            write.xlsx(modelCreation, "1.Data/tempdata2.xlsx")
             write.csv(tibble(file = input$nd_file, 
                              x_gr = input$X_1, 
                              y_gr = input$Y_1, 
@@ -628,7 +641,7 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
                              end_year2 = input$market_year[2],
                              model_year = input$market_year[1], 
                              model_end_year = input$market_year[2]),"1.Data/Rmddata.csv")
-            p <- marketDataGraph(data = "1.Data/tempdata.xlsx", targets = FALSE, str_year = input$market_year[1], end_year = input$market_year[2], vec_indic = input$proc_list2)
+            p <- marketDataGraph(data = "1.Data/tempdata2.xlsx", targets = FALSE, str_year = input$market_year[1], end_year = input$market_year[2], vec_indic = input$proc_list2)
             
             # p <- modelGraph(data = paste0(path,"/",input$nd_file), targets = FALSE)
             p %>%
