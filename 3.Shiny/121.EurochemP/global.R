@@ -1,6 +1,6 @@
 # Shiny - Приложение. Визуализация работы всего кода
 
-setwd('/mnt/seafiles.dtwin.ru/121.EurochemP')
+setwd("/mnt/github/Strategic-Planning-Platform")
 
 library(qs)
 
