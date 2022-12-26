@@ -1,4 +1,4 @@
-setwd("/mnt/github/Strategic-Planning-Platform")
+# setwd("/mnt/github/Strategic-Planning-Platform")
 server <- function(input, output,  session) {
 # 1. Инструкция пользователя 1                          ####  
   output$inst1 <- renderUI({
