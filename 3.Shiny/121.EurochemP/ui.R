@@ -2,6 +2,9 @@
 sysfonts::font_add(family = "Panton", regular = "8.Pic/Panton.otf")
 
 ui <- tagList(
+  tags$head(
+    includeCSS("www/CSS.css")
+  ),
   # 1. Слой - основа                        ####
   navbarPage( 
   "Strategic Planning Platform",# Основнное название в левом верхнем углу
