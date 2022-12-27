@@ -1,6 +1,5 @@
 # Shiny - Приложение. Визуализация работы всего кода
-
-# setwd('/mnt/seafiles.dtwin.ru/Strategic-Planning-Platform')
+setwd('/mnt/github/Strategic-Planning-Platform')
 
 library(qs)
 
