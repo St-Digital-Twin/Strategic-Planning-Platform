@@ -1,5 +1,8 @@
 setwd('/mnt/github/Strategic-Planning-Platform')
 server <- function(input, output,  session) {
+  down_table <- reactiveVal()
+  
+  
 # 1. Инструкция пользователя 1                          ####  
   output$inst1 <- renderUI({
     str1 <- paste("Ниже представлена структура потока преобразования данных.")
@@ -91,7 +94,7 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
         if(g == 0){
           tagList(
           textInput("name_file", "White name for saving", "eurochem",width =  '30%'),
-          actionButton("down", "Download as Excel file", style = "color: #001F3F; background-color: #FDC600; border-color: #FDC600"),
+          downloadButton("down", "Download as Excel file", style = "color: #001F3F; background-color: #FDC600; border-color: #FDC600"),
           rHandsontableOutput('table'))
         }else{
           if(data == "model_graph"){
@@ -155,25 +158,36 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
       ))
     })
 # 11. Сохранение промежуточной таблицы вычислений       ####
-    observeEvent(input$down,
-                 {
-                   if (!is.null(isolate(input$table))){
-                     x <- hot_to_r(isolate(input$table))
-                     write.xlsx(x, file = paste0('1.Data/3. Saved files/',input$name_file,'.xlsx'))
-                     showModal(modalDialog(
-                       "Saved",
-                       size = 's',
-                       easyClose = TRUE
-                     ))
-                   }else{
-                     showModal(modalDialog(
-                       "Error",
-                       size = 's',
-                       easyClose = TRUE
-                     ))
-                   }
-                   
-                 })
+    # observeEvent(input$down,
+    #              {
+    #                if (!is.null(isolate(input$table))){
+    #                  x <- hot_to_r(isolate(input$table))
+    #                  write.xlsx(x, file = paste0('1.Data/3. Saved files/',input$name_file,'.xlsx'))
+    #                  showModal(modalDialog(
+    #                    "Saved",
+    #                    size = 's',
+    #                    easyClose = TRUE
+    #                  ))
+    #                }else{
+    #                  showModal(modalDialog(
+    #                    "Error",
+    #                    size = 's',
+    #                    easyClose = TRUE
+    #                  ))
+    #                }
+    #                
+    #              })
+    
+    output$down <- downloadHandler(
+      filename = function() {
+        paste0(input$name_file, ".xlsx")
+      },
+      content = function(file) {
+        write.xlsx(down_table(), file)
+      }
+    )
+    
+    
 # 12. Вывод таблицы логов отправки отчета на почту      ####
     output$table2 <- renderDataTable({
       k <- read_delim("1.Data/send_report/reports.csv")
@@ -198,6 +212,7 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
       if(is.null(table0) | !is.data.table(table0[[1]])){
         data.table(Message = "It is not a table target")
       }else{
+        down_table(table0[[1]])
         rhandsontable(table0[[1]], stretchH = "all", useTypes = F,height = 600) %>%
           hot_context_menu(
             customOpts = list(
