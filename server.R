@@ -173,10 +173,10 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
 
       send.mail(from = "<dtwin496@gmail.com>",
                 to = paste0("<",reqipient,">"),
-                subject = paste0("Report on file : "),#,input$nd_file
+                subject = paste0("Report on file :", input$nd_file),
                 # body = "Body of the email",
-                 body = "testrmd.html",
-                 html = TRUE,
+                body = "Your report is enclosedl",
+                html = TRUE,
                 inline = TRUE,
                 smtp = list(host.name = "smtp.gmail.com",
                             port = 465,
@@ -184,6 +184,8 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
                             passwd = "cfdocpmuldwewwhq",
                             ssl = TRUE),
                 authenticate = TRUE,
+                attach.files = c("testrmd.pdf"),
+                file.names = c("testrmd.pdf"), # optional parameter
                 encoding = "utf-8")
       # k <- data.frame(time = Sys.time(), Status = "Succsesfull", recipient_mail = reqipient)
       write_delim(k,"1.Data/send_report/reports.csv",delim = ",",append = TRUE)
