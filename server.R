@@ -190,7 +190,7 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
       # k <- data.frame(time = Sys.time(), Status = "Succsesfull", recipient_mail = reqipient)
       write_delim(k,"1.Data/send_report/reports.csv",delim = ",",append = TRUE)
       showModal(modalDialog(
-        "Send",
+        tags$a(style = "color: black", "The report was sent by post"),
         size = 's',
         easyClose = TRUE
       ))
