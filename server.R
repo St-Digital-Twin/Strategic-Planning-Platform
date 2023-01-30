@@ -169,7 +169,7 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
 # 10. Отправка динамического отчета на email            ####
     observeEvent(input$send_email, {
       reqipient <- input$email_pol
-      knit2html("testrmd.rmd",options = "")
+      # knit2html("testrmd.rmd",options = "")
 
       send.mail(from = "<dtwin496@gmail.com>",
                 to = paste0("<",reqipient,">"),
