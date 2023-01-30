@@ -1,7 +1,7 @@
 # Необходимые библиотеки
 
 `%!in%` <- Negate(`%in%`)
-libs <- c("targets", "tarchetypes", "htmlTable",
+libs <- c("fresh","targets", "qs","tarchetypes", "htmlTable",
            "readxl","dplyr","shiny", "bs4Dash","shinydashboard","shinythemes", "sysfonts",
           "shinydashboardPlus","shinyWidgets", 
           "devtools", "openxlsx", "tidyverse", "tibble", "devtools", "data.table", "visNetwork",

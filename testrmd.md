@@ -21,25 +21,11 @@ In addition, the analysis of the impact of the growth rate of world GDP on the p
 An analysis of the directions of the relationship between the variables shows that the most correct models are obtained when using data from 2012.
 
 
-
-```
-## Error in path.expand(path): invalid 'path' argument
-```
-
-```
-## Error in path.expand(path): invalid 'path' argument
-```
+<img src="figure/cars-1.png" alt="plot of chunk cars" width="50%" /><img src="figure/cars-2.png" alt="plot of chunk cars" width="50%" />
 
 Using these correlations, we created combined methanol price model depending on oil prices, coal prices and the euro / dollar exchange rate:
 
-
-```
-## Error in path.expand(path): invalid 'path' argument
-```
-
-```
-## Error in path.expand(path): invalid 'path' argument
-```
+<img src="figure/cars2-1.png" alt="plot of chunk cars2" width="50%" /><img src="figure/cars2-2.png" alt="plot of chunk cars2" width="50%" />
 -	For almost 9 years since 2012, there have been two periods of price increases and two periods of price decreases. All these movements can be explained using a three-factor model. At the same time, model estimates are smoother, and real data are more volatile.
 -	In the process of modeling, the possibility of delayed influence of factors was taken into account. The analysis showed that the best quality model is obtained using gas prices with a lag of one month.
 -	The final equation of the methanol price model:
@@ -70,110 +56,110 @@ Using the model described above we ran predictive simulation of methanol prices 
 <tbody>
 <tr>
 <td style='padding-left: 1em; font-family: Panton; text-align: left;'>2012</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>101.981784845454</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>1.43387001252214</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>86.5860722072907</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>1.08876466626792</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>10.2394745402009</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>440.712518076378</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>109.6765</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>1.3110953849636</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>92.88</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>1.13330889604595</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>10.5625</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>431.716616666667</td>
 <td style='padding-left: 1em; font-family: Panton; text-align: left;'>0</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>459.031695971295</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>0.0415671830128095</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>476.6155863915</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>0.10400102287353</td>
 </tr>
 <tr>
 <td style='padding-left: 1em; font-family: Panton; text-align: left;'>2013</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>120.64979051004</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>1.23612752339748</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>81.1625624945347</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>2.61852522192059</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>11.560642916694</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>534.085326008545</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>110.674</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>1.36951377232217</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>84.3375</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>2.51986222635993</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>11.2866666666667</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>537.705316666667</td>
 <td style='padding-left: 1em; font-family: Panton; text-align: left;'>0</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>503.363191308705</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>0.0575228960687608</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>491.649189447334</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>0.0856530999262626</td>
 </tr>
 <tr>
 <td style='padding-left: 1em; font-family: Panton; text-align: left;'>2014</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>67.4588542334582</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>1.24612565471194</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>67.4909126620702</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>2.86932681220107</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>7.83278393823013</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>340.907799422328</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>62.33</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>1.23279999081493</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>62.44</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>3.09612278152956</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>8.3625</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>375.1706875</td>
 <td style='padding-left: 1em; font-family: Panton; text-align: left;'>0</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>359.735137928679</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>0.0552270688387118</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>367.82873253</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>0.0195696391392517</td>
 </tr>
 <tr>
 <td style='padding-left: 1em; font-family: Panton; text-align: left;'>2015</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>40.8327954829559</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>1.00924862045023</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>50.3974840077218</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>2.81548900806371</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>5.49272704225732</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>234.331715116386</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>37.72</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>1.08697826086957</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>52.1275</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>3.00522023514886</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>5.25</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>236.62155</td>
 <td style='padding-left: 1em; font-family: Panton; text-align: left;'>0</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>268.445961734192</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>0.145581005118586</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>260.96036382</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>0.102859666923828</td>
 </tr>
 <tr>
 <td style='padding-left: 1em; font-family: Panton; text-align: left;'>2016</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>57.0274671451487</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>0.996050098886062</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>84.7081921400949</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>2.7082812976313</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>5.19280952759029</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>290.320894778671</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>54.07</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>1.05502608695652</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>86.32</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>2.99636346938427</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>5.3625</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>316.81850625</td>
 <td style='padding-left: 1em; font-family: Panton; text-align: left;'>0</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>291.933516576903</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>0.00555461844887506</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>295.73664447</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>0.066542393717886</td>
 </tr>
 <tr>
 <td style='padding-left: 1em; font-family: Panton; text-align: left;'>2017</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>58.5055220682118</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>1.28200041578028</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>99.6197434482686</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>3.1941020497585</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>7.69086160011093</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>332.055285398687</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>64.21</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>1.18380909090909</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>102.155</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>3.36208676787324</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>7.46333333333333</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>367.56368125</td>
 <td style='padding-left: 1em; font-family: Panton; text-align: left;'>0</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>370.471661911061</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>0.115692712032122</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>369.410512976667</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>0.00502452179275692</td>
 </tr>
 <tr>
 <td style='padding-left: 1em; font-family: Panton; text-align: left;'>2018</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>55.5405431792289</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>1.03612948157499</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>100.066975972602</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>2.88107112631098</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>8.76924568064744</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>306.03977454984</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>56.46</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>1.13835909090909</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>101.37</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>2.6737969</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>8.01666666666667</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>326.58625</td>
 <td style='padding-left: 1em; font-family: Panton; text-align: left;'>0</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>398.360864633874</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>0.301663697863559</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>379.195615593333</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>0.161088734119496</td>
 </tr>
 <tr>
 <td style='padding-left: 1em; font-family: Panton; text-align: left;'>2019</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>60.4067801605817</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>1.21843972830468</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>60.7732007344868</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>2.35622611294959</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>4.45733770488203</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>235.107143511827</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>65.85</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>1.11061428571429</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>66.18</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>2.4566793</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>4.86</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>224.708083333333</td>
 <td style='padding-left: 1em; font-family: Panton; text-align: left;'>0</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>258.902157511928</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>0.101209234414029</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>276.69853255</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>0.231368842835725</td>
 </tr>
 <tr>
 <td style='padding-left: 1em; font-family: Panton; text-align: left;'>2020</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>44.2200014732927</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>1.21652612052529</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>58.941562063247</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>41.09</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>1.18105652173913</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>54.6</td>
 <td style='padding-left: 1em; font-family: Panton; text-align: left;'>-2</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>3.96062192470767</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>3.74333333333333</td>
 <td style='padding-left: 1em; font-family: Panton; text-align: left;'></td>
 <td style='padding-left: 1em; font-family: Panton; text-align: left;'>-2</td>
-<td style='padding-left: 1em; font-family: Panton; text-align: left;'>234.079245568887</td>
+<td style='padding-left: 1em; font-family: Panton; text-align: left;'>223.460252056667</td>
 <td style='padding-left: 1em; font-family: Panton; text-align: left;'></td>
 </tr>
 <tr>

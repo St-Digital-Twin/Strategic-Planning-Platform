@@ -118,8 +118,8 @@ graphCor <- function(data     = tar_read(model_data)$model_data, # если xlsx
   
   t <- list(family = "Panton", size = 14, color = 'white')
   ggplotly(ggplot(data, aes(x = .data[[x_gr]], y = .data[[y_gr]])) + 
-             geom_point(color = '#FDC600') + 
-             geom_smooth(method = 'lm', linetype = 3, color = '#FFFFFF', se = FALSE, formula = 'y ~ x') + 
+             geom_point(color = 'white') + 
+             geom_smooth(method = 'lm', linetype = 3, color = 'red', se = FALSE, formula = 'y ~ x') + 
              theme (
                #text = element_text(family = "Panton"),
                panel.grid.major.x = element_line(colour = "white", linetype = "dotted"),
@@ -156,14 +156,15 @@ graphCor <- function(data     = tar_read(model_data)$model_data, # если xlsx
                                                  color = "white")
              ) + 
              labs(title    = paste0('R2 = ', round(cor(data[[x_gr]], data[[y_gr]])^2, 4), '\n Correlation = ', round(cor(data[[x_gr]], data[[y_gr]]), 4)))
-  ) %>% 
-    layout(plot_bgcolor = 'rgb(0, 46, 69)') %>%
-    layout(paper_bgcolor = 'rgb(0, 46, 69)') %>%
+  )  %>% 
+    layout(plot_bgcolor = '#343a40') %>%
+    layout(paper_bgcolor = '#343a40') %>%
     layout(font = t) %>%
     layout(legend = list(
-      orientation = "h",y = -0.25))  %>%
-    layout(xaxis = list(gridcolor = 'rgb(150, 150, 150)'),
-           yaxis = list(gridcolor = 'rgb(150, 150, 150)'))
+      orientation = "h",y = -0.25, 
+      bgcolor  = '#343a40'))  %>%
+    layout(xaxis = list(gridcolor = '#6c757d'),
+           yaxis = list(gridcolor = '#6c757d')) 
 }
 
 # 5. Графики модели                                         ####
@@ -250,7 +251,7 @@ modelGraph <- function(data = tar_read(model_data)$model_data, # '1.Data/model_d
   # Гистограмма
   graph_cols <- ggplotly(ggplot(data_year, aes(x = year, y = price, fill = type)) + 
                geom_col(position = 'dodge') +
-               scale_fill_manual(values = c("methanol" = '#FDC600',"model" = '#637672'))  +
+               scale_fill_manual(values = c("methanol" = 'red',"model" = "white"))  +
              scale_x_continuous(name = 'year', breaks = seq(first(data_year$year), last(data_year$year), by = 1)) +
              theme (
                #text = element_text(family = "Panton"),
@@ -285,14 +286,14 @@ modelGraph <- function(data = tar_read(model_data)$model_data, # '1.Data/model_d
                                                  color = "white")
              )  
   ) %>% 
-    layout(plot_bgcolor = 'rgb(0, 46, 69)') %>%
-    layout(paper_bgcolor = 'rgb(0, 46, 69)') %>%
+    layout(plot_bgcolor = '#343a40') %>%
+    layout(paper_bgcolor = '#343a40') %>%
     layout(font = t) %>%
     layout(legend = list(
-      orientation = "h",y = -0.25,
-      bgcolor  = 'rgb(0, 46, 69)'))  %>%
-    layout(xaxis = list(gridcolor = 'rgb(150, 150, 150)'),
-           yaxis = list(gridcolor = 'rgb(150, 150, 150)'))
+      orientation = "h",y = -0.25, 
+      bgcolor  = '#343a40'))  %>%
+    layout(xaxis = list(gridcolor = '#6c757d'),
+           yaxis = list(gridcolor = '#6c757d')) 
   
   # Возврат
   return(list(curve      = curve,
@@ -329,7 +330,7 @@ marketDataGraph <- function(vec_indic = c('coal', 'gas', 'oil'),
   
   # Кривая
   ggplotly(ggplot(data0, aes(x = rowid, y = price, color = type)) + 
-                  geom_line() +
+                  geom_line() + scale_color_manual(values=c("red","#FFFFFF", "#3D9970", "#FFA500", "#1C80AC")) +
              # scale_colour_manual(values = c('#FDC600','#637672')) +
                   scale_x_continuous(name = 'year', breaks = seq(first(data0$rowid), last(data0$rowid), by = 12), label = seq(first(data0$year), last(data0$year), by = 1)) +
                            theme (
@@ -363,14 +364,84 @@ marketDataGraph <- function(vec_indic = c('coal', 'gas', 'oil'),
                              plot.caption      = element_text (size  = 8,
                                                                face  = "italic",
                                                                color = "white")
-                           )  
+                           )
   ) %>% 
-    layout(plot_bgcolor = 'rgb(0, 46, 69)') %>%
-    layout(paper_bgcolor = 'rgb(0, 46, 69)') %>%
+    layout(plot_bgcolor = '#343a40') %>%
+    layout(paper_bgcolor = '#343a40') %>%
     layout(font = t) %>%
     layout(legend = list(
-      orientation = "h",y = -0.25,
-      bgcolor  = 'rgb(0, 46, 69)'))  %>%
-    layout(xaxis = list(gridcolor = 'rgb(150, 150, 150)'),
-           yaxis = list(gridcolor = 'rgb(150, 150, 150)'))
+      orientation = "h",y = -0.25, 
+      bgcolor  = '#343a40'))  %>%
+    layout(xaxis = list(gridcolor = '#6c757d'),
+           yaxis = list(gridcolor = '#6c757d')) 
+}
+# 8. Графики рыночных акций                                 ####
+marketDataGraph2 <- function(vec_indic = c('coal', 'gas', 'oil'),
+                            str_year = 2012,
+                            end_year = 2020,
+                            data = tar_read(model_data)$model_data, # '1.Data/model_data.xlsx'
+                            targets  = TRUE){
+  if(!targets){
+    data <- read.xlsx(xlsxFile = data,sep.names = " ") %>% as.data.table()
+  }
+  if(str_year < min(data$year)){
+    str_year <- min(data$year)
+  }
+  if(end_year > max(data$year)){
+    end_year <- max(data$year)
+  }
+  # Подготовка данных для кривых
+  data0 <- copy(data) %>% 
+    .[, rowid := 1:nrow(.)] %>% 
+    .[, c('year', 'rowid', vec_indic), with = FALSE] %>% 
+    .[year %between% c(str_year, end_year), ] %>% 
+    melt(measure = vec_indic, variable.name = "type", value.name = 'price')
+  #na.omit(., cols = 'methanol')
+  
+  # Кривая
+  ggplotly(ggplot(data0, aes(x = rowid, y = price, color = type)) + 
+             geom_line() + scale_color_manual(values=c("red","#343a40", "#3D9970", "#FFA500", "#1C80AC")) +
+             # scale_colour_manual(values = c('#FDC600','#637672')) +
+             scale_x_continuous(name = 'year', breaks = seq(first(data0$rowid), last(data0$rowid), by = 12), label = seq(first(data0$year), last(data0$year), by = 1)) +
+             theme (
+               #text = element_text(family = "Panton"),
+               panel.grid.major.x = element_line(colour = "white", linetype = "dotted"),
+               panel.grid.major.y = element_line(colour = "white", linetype = "dotted"),
+               #legend.text.align = 0.001,
+               text              = element_text (family = "Panton",
+                                                 color  = "black"),
+               rect              = element_rect (fill   = "black"),
+               line              = element_line (color  = "black"),
+               title             = element_text (size   = 15,
+                                                 face   = "bold"),
+               
+               legend.title      = element_text (size  = 12,
+                                                 color = "black",
+                                                 face  = "bold"),
+               legend.key        = element_rect (fill  = "black"),
+               legend.background = element_rect (fill  = "black"),
+               legend.text       = element_text (size  = 12,
+                                                 color = "black",
+                                                 face  = "bold"),
+               
+               panel.background  = element_rect (fill = "black"),
+               panel.grid        = element_blank(),
+               
+               axis.title.x      = element_text (size  = 16),
+               axis.title.y      = element_text (size  = 16),
+               axis.text         = element_text (size  = 12,
+                                                 color = "black"),
+               plot.caption      = element_text (size  = 8,
+                                                 face  = "italic",
+                                                 color = "white")
+             )
+  ) %>% 
+    layout(plot_bgcolor = 'white') %>%
+    layout(paper_bgcolor = 'white') %>%
+    layout(font = t) %>%
+    layout(legend = list(
+      orientation = "h",y = -0.25, 
+      bgcolor  = 'white'))  %>%
+    layout(xaxis = list(gridcolor = '#CCCCCC'),
+           yaxis = list(gridcolor = '#CCCCCC')) 
 }
