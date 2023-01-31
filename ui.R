@@ -158,16 +158,18 @@ ui <- bs4DashPage(
       # line-height = 1.5,
       style = "font-size:12px;",
       tags$h5 (tags$b(translete[Key == "200_Ui_tags_1" & variable == "En"]$value), style = "margin-top: 15px; margin-bottom: 15px;"),
-      tags$li( a(href = "https://www.dtwin.ru"       , target = "_blank", translete[Key == "200_Ui_tags_2" & variable == "En"]$value)),  # tags$li(
-      tags$li( a(href = "https://openbook.dtwin.ru"  , target = "_blank", translete[Key == "200_Ui_tags_3" & variable == "En"]$value)),  # tags$li(
-      tags$li( a(href = "https://dtwin.city"         , target = "_blank", translete[Key == "200_Ui_tags_4" & variable == "En"]$value)),  # tags$li(
-      tags$li( a(href = "https://t.me/DT_Prosha_Bot" , target = "_blank", translete[Key == "200_Ui_tags_5" & variable == "En"]$value)),  # tags$li(
-      tags$li( a(href = "https://mobski.dtwin.ru/"   , target = "_blank", translete[Key == "200_Ui_tags_6" & variable == "En"]$value)),  # tags$li(
-      tags$li( a(href = "https://teb.dtwin.ru/"      , target = "_blank", translete[Key == "200_Ui_tags_7" & variable == "En"]$value)),  # tags$li(
-      tags$li( a(href = "https://realestate.dtwin.ru", target = "_blank", translete[Key == "200_Ui_tags_8" & variable == "En"]$value)),  # tags$li(
-      tags$li( a(href = "https://parks.dtwin.ru"     , target = "_blank", translete[Key == "200_Ui_tags_9" & variable == "En"]$value)),  # tags$li(
-      tags$li( a(href = "https://asset.dtwin.ru"     , target = "_blank", translete[Key == "200_Ui_tags_10" & variable == "En"]$value)),  # tags$li(
-      tags$li( a(href = "https://t.me/sergeygumerov" , target = "_blank", translete[Key == "200_Ui_tags_11" & variable == "En"]$value))  # tags$li(
+      tags$li( a(href = "https://the-digital-twin.com/", target = "_blank", "Digital Twin's website")),  # tags$li(
+      # tags$li( a(href = "https://openbook.dtwin.ru"  , target = "_blank", translete[Key == "200_Ui_tags_3" & variable == "En"]$value)),  # tags$li(
+      # tags$li( a(href = "https://dtwin.city"         , target = "_blank", translete[Key == "200_Ui_tags_4" & variable == "En"]$value)),  # tags$li(
+      # tags$li( a(href = "https://t.me/DT_Prosha_Bot" , target = "_blank", translete[Key == "200_Ui_tags_5" & variable == "En"]$value)),  # tags$li(
+      # tags$li( a(href = "https://mobski.dtwin.ru/"   , target = "_blank", translete[Key == "200_Ui_tags_6" & variable == "En"]$value)),  # tags$li(
+      tags$li( a(href = "https://teb.dtwin.city/"      , target = "_blank", "Energy Equilibrium")),  # tags$li(
+      # tags$li( a(href = "https://realestate.dtwin.ru", target = "_blank", translete[Key == "200_Ui_tags_8" & variable == "En"]$value)),  # tags$li(
+      tags$li( a(href = "https://esg.dtwin.city/"     , target = "_blank", "Influence of ESG on the city")),  # tags$li(
+      tags$li( a(href = "https://asset.dtwin.city/"   , target = "_blank", "Enterprise management")),  # tags$li(
+      tags$li( a(href = "https://energy.dtwin.city/"   , target = "_blank", "International energetics")),  # tags$li(
+      # tags$li( a(href = "https://plan.dtwin.city/"   , target = "_blank", "Strategic Planning Platform")),  # tags$li(
+      tags$li( a(href = "https://www.linkedin.com/company/dtwin/mycompany/" , target = "_blank", "Linkedin developers"))  # tags$li(
     )
   ),
   
