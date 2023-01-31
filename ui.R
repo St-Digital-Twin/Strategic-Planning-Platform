@@ -146,7 +146,7 @@ ui <- bs4DashPage(
       fileInput("user_file", "Send File", accept = ".csv"), 
       selectizeInput("from_where", label = "Choose input", choices = c("File","Downloaded"),options = list(create = TRUE), selected = "File"),
       uiOutput("id2"),
-      textInput("email_pol", "Write email for reporting", "info@dtwin.ru"),
+      textInput("email_pol", "Write email for reporting", "info@dtwin.com"),
       actionButton("send_email", "Send Report", style="color: #001F3F; background-color: #FDC600; border-color: #FDC600")
     )
   ),

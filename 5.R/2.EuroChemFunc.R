@@ -400,7 +400,7 @@ marketDataGraph2 <- function(vec_indic = c('coal', 'gas', 'oil'),
   
   # Кривая
   ggplotly(ggplot(data0, aes(x = rowid, y = price, color = type)) + 
-             geom_line() + scale_color_manual(values=c("red","#343a40", "#3D9970", "#FFA500", "#1C80AC")) +
+             geom_line() + scale_color_manual(values=c("red","#343A40", "#3D9970", "#FFA500", "#1C80AC","#35BF35","#010AFF","#FBCAA1")) +
              # scale_colour_manual(values = c('#FDC600','#637672')) +
              scale_x_continuous(name = 'year', breaks = seq(first(data0$rowid), last(data0$rowid), by = 12), label = seq(first(data0$year), last(data0$year), by = 1)) +
              theme (

@@ -281,7 +281,7 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
       tar_make(download_files)
       
       showModal(modalDialog(
-        "Updated",
+        tags$a(style = "color: black", "Updated"),
         size = 's',
         easyClose = TRUE
       ))
@@ -571,7 +571,7 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
         openxlsx::write.xlsx (t,        "1.Data/2.shiny/coords.xlsx")
         openxlsx::write.xlsx (t, paste0("1.Data/2.shiny/coords.", Sys.Date(),".xlsx")) # Резервная копия
         showModal(modalDialog(
-          "Saved",
+          tags$a(style = "color: black", "Saved"),
           size = 's',
           easyClose = TRUE
         ))
