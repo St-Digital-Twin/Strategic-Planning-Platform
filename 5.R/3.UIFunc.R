@@ -10,7 +10,7 @@ alko_vec <- c('Algorithm 1','Algorithm 2','Algorithm 3','Algorithm 4')
 visual_layout_processing <-  fluidRow(
   selectizeInput('alko', label = 'Algorythm', choices = alko_vec, options = list(create = TRUE), selected = 'Algorithm 1', multiple = TRUE),
   sliderInput('market_year', 'Year', min = min(data$year), max = max(data$year), value = c(2012, 2020), sep = ''),
-  actionButton("update_data", "Update data", style = "color: #001F3F; background-color: #FDC600; border-color: #FDC600")
+  actionButton("update_data", "Update data", style = "color: #ffffff; background-color: #1c1c1c; border-color: #1c1c1c")
 )
 # Графики
 # box 1

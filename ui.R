@@ -118,6 +118,7 @@ ui <- bs4DashPage(
            })
         </script>")),
     status = 'light',
+    controlbarIcon = shiny::icon("info"),
     textOutput("texttitle")
     #Не удаляйте пж
     # bs4Dash::actionButton("help_button", "Справка по данному разделу", icon = icon("info"),status = "info", flat = TRUE)
@@ -131,10 +132,12 @@ ui <- bs4DashPage(
     bs4SidebarMenu(
       id = "sbMenu",
       tags$style(HTML('.sidebar{font-family: Panton;
-                                 color: white}
-                        a:hover{ background: #191a1a }
+                                 color: black}
+                        a:hover{ background: #787878 }
                         }
                       ')), # .active a{ background: #817CB1<i class="fa-regular fa-chart-scatter"></i>
+      setSliderColor(c("black", "black"), c(1, 2)),
+      chooseSliderSkin("Flat"),
       # 2.2.1. Menu                     ####
       convertMenuItem(bs4SidebarMenuItem("Methodology", icon = icon("project-diagram")), tabName = 'methodology'),
       convertMenuItem(bs4SidebarMenuItem('Data context graphic', visual_layout_processing, icon = icon("chart-line")), tabName = 'processing'),
@@ -143,11 +146,11 @@ ui <- bs4DashPage(
                                          selectizeInput("X_1", label = "Choose X axis for first graph", choices = list_axis_cor, options = list(create = TRUE), selected = 'oil'),
                                          sliderInput('first_graph_year', 'Year', min = min(data$year), max = max(data$year), value = c(2012, 2020), sep = ''),
                                          icon = icon("chart-column")), tabName = 'visualization'),
-      fileInput("user_file", "Send File", accept = ".csv"), 
+      fileInput("user_file",tags$a(style = "color: black", "Send File"), accept = ".csv"), 
       selectizeInput("from_where", label = "Choose input", choices = c("File","Downloaded"),options = list(create = TRUE), selected = "File"),
       uiOutput("id2"),
       textInput("email_pol", "Write email for reporting", "info@dtwin.com"),
-      actionButton("send_email", "Send Report", style="color: #001F3F; background-color: #FDC600; border-color: #FDC600")
+      actionButton("send_email", "Send Report", style="color: #ffffff; background-color: #1c1c1c; border-color: #1c1c1c")#e03a3a
     )
   ),
   # 2.3. Controlbar (left)              ####
@@ -175,32 +178,62 @@ ui <- bs4DashPage(
   
   # 2.4. Body                           ####
   body = bs4DashBody(
+    # use_theme(create_theme(
+    #   bs4dash_status(light = "#D0D0D0"),
+    #   bs4dash_status(light = "#1A1814", primary = "#30d5c8"),
+    #   bs4dash_vars(
+    #     navbar_light_color = "gray",
+    #     navbar_light_active_color = "white",
+    #     navbar_light_hover_color = "white"
+    #   ),
+    #   
+    #   bs4dash_sidebar_light(
+    #     bg = "#1A1814",
+    #     color = 'white',
+    #     hover_color  = 'gray',
+    #     submenu_active_bg  = 'orange'
+    #       # header_color = 'black'
+    #   ),
+    #   bs4dash_sidebar_dark(
+    #     bg = "#1A1814",
+    #     color = 'white',
+    #     hover_color  = 'gray',
+    #     submenu_active_bg   = 'orange'
+    #       # header_color = 'black'
+    #   ),
+    #   bs4dash_layout(
+    #     sidebar_width = "340px",
+    #     main_bg = "#15120F"
+    #   ),
+    #   bs4dash_color(
+    #     gray_900 = "#FFF"
+    #   )
+    # )),
     use_theme(create_theme(
-      bs4dash_status(light = "#D0D0D0"),
-      bs4dash_status(light = "#1A1814", primary = "#30d5c8"),
+      bs4dash_status(light = "#787878"),
+      bs4dash_status(light = "#1c1c1c", primary = "#e03a3a"),
       bs4dash_vars(
-        navbar_light_color = "gray",
+        navbar_light_color = "#787878",
         navbar_light_active_color = "white",
         navbar_light_hover_color = "white"
       ),
-      
       bs4dash_sidebar_light(
-        bg = "#1A1814",
-        color = 'white',
-        hover_color  = 'gray',
-        submenu_active_bg  = 'orange'
-          # header_color = 'black'
+        bg = "white",
+        color = '#1c1c1c',
+        hover_color  = '#787878',
+        submenu_active_bg  = '#787878'
+        # header_color = 'black'
       ),
       bs4dash_sidebar_dark(
-        bg = "#1A1814",
-        color = 'white',
-        hover_color  = 'gray',
-        submenu_active_bg   = 'orange'
-          # header_color = 'black'
+        bg = "white",
+        color = '#1c1c1c',
+        hover_color  = '#787878',
+        submenu_active_bg   = '#787878'
+        # header_color = 'black'
       ),
       bs4dash_layout(
         sidebar_width = "340px",
-        main_bg = "#15120F"
+        main_bg = "#1c1c1c"
       ),
       bs4dash_color(
         gray_900 = "#FFF"

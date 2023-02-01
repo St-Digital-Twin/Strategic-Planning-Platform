@@ -6,37 +6,37 @@ server <- function(input, output,  session) {
     if(input$sbMenu == 'methodology'){
       fluidPage(
         fluidRow(
-          bs4Card(width = 12, title = 'Data process flow', collapsible = TRUE, background = 'white', visNetworkOutput("visnetwork", width = 'auto', height = "790px") %>% withSpinner(type = getOption("spinner.type", default = 6),color = "#FFA500"),
+          bs4Card(maximizable = TRUE,width = 12, title = 'Data process flow', collapsible = TRUE, background = 'white', visNetworkOutput("visnetwork", width = 'auto', height = "790px") %>% withSpinner(type = getOption("spinner.type", default = 6),color = "#FFA500"),
                   actionButton('SavePos', 'Save Positions', style = "color: #fff; background-color: #001F3F; border-color: #001F3F")),
-          bs4Card(width = 12, title = 'Intermediate result', collapsible = TRUE, background = 'white',uiOutput("id3"))#,DT::dataTableOutput("table_first", width = "100%", height = "auto"))
+          bs4Card(maximizable = TRUE,width = 12, title = 'Intermediate result', collapsible = TRUE, background = 'white',uiOutput("id3"))#,DT::dataTableOutput("table_first", width = "100%", height = "auto"))
         )
       )
     }else if(input$sbMenu == 'processing'){
       fluidPage(
         fluidRow(
-          bs4Card(width = 7, title = 'Сomparing algorithms', background = "gray-dark", 
-                  plotlyOutput('proc_graph1') %>% withSpinner(type = getOption("spinner.type", default = 6),color = "#FDC600")),
-          bs4Card(width = 5, title = 'Relative changes',background = "gray-dark", collapsible = TRUE,
-                  plotlyOutput('model_graph2') %>% withSpinner(type = getOption("spinner.type", default = 6),color = "#FDC600")),
-          bs4Card(width = 5, title = 'Reciprocal behaviour',background = "white", 
+          bs4Card(maximizable = TRUE,width = 7, title = 'Сomparing algorithms', background = "gray-dark", 
+                  plotlyOutput('proc_graph1') %>% withSpinner(type = getOption("spinner.type", default = 6),color = "#e03a3a")),
+          bs4Card(maximizable = TRUE,width = 5, title = 'Relative changes',background = "gray-dark", collapsible = TRUE,
+                  plotlyOutput('model_graph2') %>% withSpinner(type = getOption("spinner.type", default = 6),color = "#e03a3a")),
+          bs4Card(maximizable = TRUE,width = 5, title = 'Reciprocal behaviour',background = "white", 
                   fluidRow(
                     column(width = 4,selectizeInput('td_axis1', label = 'Select x label', choices = need_cols(), options = list(create = TRUE), need_cols()[1], multiple = FALSE)),
                     column(width = 4,selectizeInput('td_axis2', label = 'Select y label', choices = need_cols(), options = list(create = TRUE), need_cols()[2], multiple = FALSE)),
                     column(width = 4,selectizeInput('td_axis3', label = 'Select z label', choices = need_cols(), options = list(create = TRUE), need_cols()[3], multiple = FALSE)),
-                    column(width = 12,plotlyOutput('chart3D') %>% withSpinner(type = getOption("spinner.type", default = 6),color = "#FDC600")))),
-          bs4Card(width = 7, title = 'Input comparison',background = "white", 
+                    column(width = 12,plotlyOutput('chart3D') %>% withSpinner(type = getOption("spinner.type", default = 6),color = "#e03a3a")))),
+          bs4Card(maximizable = TRUE,width = 7, title = 'Input comparison',background = "white", 
                   selectizeInput('proc_list2', label = 'Curve data', choices = list_box2_processing, options = list(create = TRUE), selected = c('gas', 'gdp'), multiple = TRUE),
-                  plotlyOutput('proc_graph2') %>% withSpinner(type = getOption("spinner.type", default = 6),color = "#FDC600"))
+                  plotlyOutput('proc_graph2') %>% withSpinner(type = getOption("spinner.type", default = 6),color = "#e03a3a"))
           
         ))
     }else if(input$sbMenu == 'visualization'){
               fluidRow(
-              bs4Card(width = 8,title = 'Correlation',background = "gray-dark", collapsible = TRUE,
-                    plotlyOutput('cor_pot1') %>% withSpinner(type = getOption("spinner.type", default = 6),color = "#FDC600")),
-              bs4Card(width = 4,title = 'Сorrelation distribution',background = "gray-dark", collapsible = TRUE,
-                      plotlyOutput('cor_pot4') %>% withSpinner(type = getOption("spinner.type", default = 6),color = "#FDC600")),
-              bs4Card(width = 12,title = 'Correlations of all indicators',background = "white", collapsible = TRUE,
-                    plotlyOutput('cor_pot3',height = "700px") %>% withSpinner(type = getOption("spinner.type", default = 6),color = "#FDC600")))
+              bs4Card(maximizable = TRUE,width = 8,title = 'Correlation',background = "gray-dark", collapsible = TRUE,
+                    plotlyOutput('cor_pot1') %>% withSpinner(type = getOption("spinner.type", default = 6),color = "#e03a3a")),
+              bs4Card(maximizable = TRUE,width = 4,title = 'Сorrelation distribution',background = "gray-dark", collapsible = TRUE,
+                      plotlyOutput('cor_pot4') %>% withSpinner(type = getOption("spinner.type", default = 6),color = "#e03a3a")),
+              bs4Card(maximizable = TRUE,width = 12,title = 'Correlations of all indicators',background = "white", collapsible = TRUE,
+                    plotlyOutput('cor_pot3',height = "700px") %>% withSpinner(type = getOption("spinner.type", default = 6),color = "#e03a3a")))
     }
   })
   
@@ -47,9 +47,9 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
     
 # 6. Логотип                                            ####
     output$logo <- renderImage({
-      list(src = '6.Pic/15.png',
+      list(src = '6.Pic/17.png',
            width = 150,
-           vspace = 20,
+           vspace = 0,
            hspace = 20,
            alt = "https://www.eurochemgroup.com/")
       
@@ -100,7 +100,7 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
           if(g == 0){
             tagList(
               textInput("name_file", "White name for saving", "eurochem",width =  '30%'),
-              downloadButton("down", "Download as Excel file", style = "color: #001F3F; background-color: #FDC600; border-color: #FDC600"),
+              downloadButton("down", "Download as Excel file", style = "color: #ffffff; background-color: #1c1c1c; border-color: #1c1c1c"),
               rHandsontableOutput('table'))
           }  
         }else{
@@ -112,16 +112,16 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
         #   if(data == "model_graph"){
         #     tagList(
         #       box(width = 6,title = 'Model graph first',background = "navy", collapsible = TRUE,
-        #           plotlyOutput('model_graph1') %>% withSpinner(type = getOption("spinner.type", default = 6),color = "#FDC600")),
+        #           plotlyOutput('model_graph1') %>% withSpinner(type = getOption("spinner.type", default = 6),color = "#e03a3a")),
         #       box(width = 6,title = 'Model graph second',background = "navy", collapsible = TRUE,
-        #           plotlyOutput('model_graph2') %>% withSpinner(type = getOption("spinner.type", default = 6),color = "#FDC600")))
+        #           plotlyOutput('model_graph2') %>% withSpinner(type = getOption("spinner.type", default = 6),color = "#e03a3a")))
         #   }else{
         #     if(data == "correlation_graph"){
         #         tagList(
         #           box(width = 6,title = 'Correlation graph first',background = "navy", collapsible = TRUE,
-        #               plotlyOutput('cor_pot1') %>% withSpinner(type = getOption("spinner.type", default = 6),color = "#FDC600")),
+        #               plotlyOutput('cor_pot1') %>% withSpinner(type = getOption("spinner.type", default = 6),color = "#e03a3a")),
         #           box(width = 6,title = 'Correlation graph second',background = "navy", collapsible = TRUE,
-        #               plotlyOutput('cor_pot2') %>% withSpinner(type = getOption("spinner.type", default = 6),color = "#FDC600")),
+        #               plotlyOutput('cor_pot2') %>% withSpinner(type = getOption("spinner.type", default = 6),color = "#e03a3a")),
         #           box(width = 12,title = a('All quarterly correlation', style = 'color:#001F3F; vspace:1;'),background = "gray", collapsible = TRUE,
         #               plotlyOutput('cor_pot3',height = "700px") %>% withSpinner(type = getOption("spinner.type", default = 6),color = "#001F3F")))
         #     }else{
@@ -189,11 +189,17 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
                 encoding = "utf-8")
       # k <- data.frame(time = Sys.time(), Status = "Succsesfull", recipient_mail = reqipient)
       write_delim(k,"1.Data/send_report/reports.csv",delim = ",",append = TRUE)
-      showModal(modalDialog(
-        tags$a(style = "color: black", "The report was sent by post"),
-        size = 's',
-        easyClose = TRUE
-      ))
+      sendSweetAlert(
+        session = session,
+        title = "Success",
+        text = "The report was sent by post",
+        type = "success"
+      )
+      # showModal(modalDialog(
+      #   tags$a(style = "color: black", "The report was sent by post"),
+      #   size = 's',
+      #   easyClose = TRUE
+      # ))
     })
     output$down <- downloadHandler(
       filename = function() {
@@ -280,11 +286,17 @@ vec_of_files2 <- reactiveValues(a = vec_of_files)
       pipeline$e <- new_graph$e
       tar_make(download_files)
       
-      showModal(modalDialog(
-        tags$a(style = "color: black", "Updated"),
-        size = 's',
-        easyClose = TRUE
-      ))
+      sendSweetAlert(
+        session = session,
+        title = "Success",
+        text = "Updated",
+        type = "success"
+      )
+      # showModal(modalDialog(
+      #   tags$a(style = "color: black", "Updated"),
+      #   size = 's',
+      #   easyClose = TRUE
+      # ))
     })
     
 # 16. Первый корреляционный график                      ####
