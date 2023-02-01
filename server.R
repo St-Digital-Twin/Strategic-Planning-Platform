@@ -7,7 +7,7 @@ server <- function(input, output,  session) {
       fluidPage(
         fluidRow(
           bs4Card(maximizable = TRUE,width = 12, title = 'Data process flow', collapsible = TRUE, background = 'white', visNetworkOutput("visnetwork", width = 'auto', height = "790px") %>% withSpinner(type = getOption("spinner.type", default = 6),color = "#FFA500"),
-                  actionButton('SavePos', 'Save Positions', style = "color: #fff; background-color: #001F3F; border-color: #001F3F")),
+                  actionButton('SavePos', 'Save Positions', style = "color: #fff; background-color: #1c1c1c; border-color: #1c1c1c")),
           bs4Card(maximizable = TRUE,width = 12, title = 'Intermediate result', collapsible = TRUE, background = 'white',uiOutput("id3"))#,DT::dataTableOutput("table_first", width = "100%", height = "auto"))
         )
       )
