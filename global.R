@@ -1,10 +1,15 @@
-# Центральный файл для запуска отдельных функций таргетса
-source("5.R/1.libraries.r")
+# Shiny - Приложение. Визуализация работы всего кода
+#setwd('/mnt/data-external/Strategic-Planning-Platform/')
 
-tar_make(download_files)
-tar_make(correlation_graph)
-tar_make(quotes_forecast)
-tar_make(model_data)
-tar_make(model_graph)
-tar_make(send_report)
-tar_make(dashboard)
+library(qs)
+
+source('5.R/2.EuroChemFunc.R', encoding = 'UTF-8')
+source('5.R/3.UIFunc.R', encoding = 'UTF-8')
+source('visnetwork_fun.R', encoding = 'UTF-8')
+source('server.R',         encoding = 'UTF-8')
+source('ui.R',             encoding = 'UTF-8')
+
+# 6. Shiny                            ####
+shinyApp(ui, server)
+
+
